@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * Represents a login request.
+ * @package App\Http\Requests\Auth
+ */
 class LoginRequest extends FormRequest
 {
     /**
