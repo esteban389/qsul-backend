@@ -2,8 +2,13 @@
 
 namespace App\Providers;
 
+use App\Models\User;
+use App\Policies\UserPolicy;
 use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Routing\ResponseFactory;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use Symfony\Component\HttpFoundation\Response;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -27,5 +32,16 @@ class AppServiceProvider extends ServiceProvider
         ResetPassword::createUrlUsing(function (object $notifiable, string $token) {
             return config('app.frontend_url') . "/contrasena/$token?email={$notifiable->getEmailForPasswordReset()}";
         });
+
+        ResponseFactory::macro('created', function ($location = null) {
+
+            if (func_num_args() === 0) {
+                return $this->noContent(Response::HTTP_CREATED);
+            }
+
+            return $this->noContent(Response::HTTP_CREATED, ['Location' => $location]);
+        });
+
+        Gate::policy(User::class, UserPolicy::class);
     }
 }

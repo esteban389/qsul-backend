@@ -33,3 +33,19 @@ test('users can logout', function () {
     $this->assertGuest();
     $response->assertNoContent();
 });
+
+test('first login verifies the email', function () {
+    $user = User::factory()->unverified()->create();
+    $this->assertFalse($user->hasVerifiedEmail());
+
+    $response = $this->post('/login', [
+        'email' => $user->email,
+        'password' => 'password',
+    ]);
+
+    $user->refresh();
+
+    $this->assertAuthenticated();
+    $response->assertNoContent();
+    $this->assertTrue($user->hasVerifiedEmail());
+});

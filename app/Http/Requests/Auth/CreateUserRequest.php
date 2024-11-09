@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\DTOs\UserRole;
+use App\Models\Campus;
 use App\Models\User;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -15,12 +17,12 @@ use Illuminate\Validation\Rules\File;
 class CreateUserRequest extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
+     * Determine if the user is authorized to make this request (basic check).
+     * @return bool
      */
     public function authorize(): bool
     {
-        //TODO check for user role instead of just checking if user is logged in, using a policy
-        return Auth::hasUser();
+        return Auth::check() && Auth::user()->role!==UserRole::ProcessLeader;
     }
 
 
@@ -34,8 +36,8 @@ class CreateUserRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            //TODO add profile picture to model
-            //'profile_picture' => ['required', File::image()->max(1024)],
+            'avatar' => ['required', File::image()->max(1024)],
+            'campus_id' => ['nullable','integer','exists:'.Campus::class.',id'],
         ];
     }
 }

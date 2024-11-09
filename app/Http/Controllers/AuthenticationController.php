@@ -5,23 +5,24 @@ namespace App\Http\Controllers;
 use App\DTOs\CreateUserDto;
 use App\DTOs\ForgotPasswordDto;
 use App\DTOs\ResetPasswordDto;
+use App\Filters\UsersFilters;
 use App\Http\Requests\Auth\CreateUserRequest;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
+use App\Http\Services\EmployeeService;
 use App\Http\Services\UserService;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class AuthenticationController extends Controller
 {
 
-    public function __construct(private UserService $userService)
+    public function __construct(private readonly UserService $userService, private readonly EmployeeService $employeeService)
     {
     }
 
@@ -41,7 +42,8 @@ class AuthenticationController extends Controller
             if ($request->user()->markEmailAsVerified()) {
                 event(new Verified($request->user()));
             }
-        };
+        }
+        ;
 
         return response()->noContent();
     }
@@ -50,17 +52,19 @@ class AuthenticationController extends Controller
      * Handle an incoming registration request.
      * @param CreateUserRequest $request
      * @return Response
+     * @throws ValidationException
      */
     public function Register(CreateUserRequest $request): Response
     {
 
         $createUserDto = CreateUserDto::fromRequest($request);
 
-        $user = $this->userService->store($createUserDto);
+        $employee = $this->employeeService->store($createUserDto);
 
-        Auth::login($user);
+        $this->userService->store($createUserDto, $employee);
 
-        return response()->noContent();
+
+        return response()->created();
     }
 
     /**
@@ -117,8 +121,12 @@ class AuthenticationController extends Controller
 
     }
 
-    public function ShowUsers()
+    public function ShowUsers(Request $request): JsonResponse
     {
+        $filters = UsersFilters::getFilters($request);
 
+        $users = $this->userService->getUsers($filters);
+
+        return response()->json($users);
     }
 }

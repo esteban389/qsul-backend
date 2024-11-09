@@ -12,6 +12,8 @@
         "laravel/tinker": "^2.9"
     },
     "require-dev": {
+        "beyondcode/laravel-query-detector": "^2.0",
+        "brianium/paratest": "^7.6",
         "fakerphp/faker": "^1.23",
         "laravel-lang/lang": "^15.9",
         "laravel/pail": "^1.1",
