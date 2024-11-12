@@ -5,7 +5,7 @@ namespace App\DTOs;
 use App\Http\Requests\Auth\CreateUserRequest;
 use Illuminate\Http\UploadedFile;
 
-readonly class CreateUserDto
+readonly class CreateUserDto implements DataTransferObject
 {
     public function __construct(
         public string $email,
@@ -15,7 +15,11 @@ readonly class CreateUserDto
     ) {
     }
 
-    public static function fromRequest(CreateUserRequest $request): CreateUserDto
+    /**
+     * @param CreateUserRequest $request
+     * @return CreateUserDto
+     */
+    public static function fromRequest($request): CreateUserDto
     {
         return new CreateUserDto(
             email: $request->validated('email'),
@@ -23,5 +27,15 @@ readonly class CreateUserDto
             avatar: $request->validated('avatar'),
             campus_id: $request->validated('campus_id'),
         );
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'email' => $this->email,
+            'name' => $this->name,
+            'avatar' => $this->avatar,
+            'campus_id' => $this->campus_id,
+        ];
     }
 }

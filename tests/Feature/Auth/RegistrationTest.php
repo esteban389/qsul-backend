@@ -48,7 +48,7 @@ test('User created by National Coordinator has campus coordinator role', functio
     Storage::fake();
     $avatar = UploadedFile::fake()->image('avatar.jpg');
 
-    $user = User::factory()->withRole(UserRole::from('national_coordinator'))->create();
+    $user = User::factory()->withRole(UserRole::NationalCoordinator)->create();
     $this->actingAs($user);
 
     $campus = Campus::factory()->create();

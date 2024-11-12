@@ -3,9 +3,8 @@
 namespace App\DTOs;
 
 use App\Http\Requests\Auth\ResetPasswordRequest;
-use Illuminate\Support\Facades\Log;
 
-readonly class ResetPasswordDto
+readonly class ResetPasswordDto implements DataTransferObject
 {
 
     public function __construct(
@@ -17,7 +16,11 @@ readonly class ResetPasswordDto
     {
     }
 
-    public static function fromRequest(ResetPasswordRequest $request): ResetPasswordDto
+    /**
+     * @param ResetPasswordRequest $request
+     * @return ResetPasswordDto
+     */
+    public static function fromRequest($request): ResetPasswordDto
     {
         return new ResetPasswordDto(
             email: $request->validated('email'),

@@ -5,18 +5,20 @@ namespace App\Http\Controllers;
 use App\DTOs\CreateUserDto;
 use App\DTOs\ForgotPasswordDto;
 use App\DTOs\ResetPasswordDto;
-use App\Filters\UsersFilters;
 use App\Http\Requests\Auth\CreateUserRequest;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Http\Services\EmployeeService;
 use App\Http\Services\UserService;
+use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 
 class AuthenticationController extends Controller
@@ -56,13 +58,11 @@ class AuthenticationController extends Controller
      */
     public function Register(CreateUserRequest $request): Response
     {
-
         $createUserDto = CreateUserDto::fromRequest($request);
 
         $employee = $this->employeeService->store($createUserDto);
 
         $this->userService->store($createUserDto, $employee);
-
 
         return response()->created();
     }
@@ -121,12 +121,34 @@ class AuthenticationController extends Controller
 
     }
 
+    /**
+     * @throws AuthorizationException
+     */
     public function ShowUsers(Request $request): JsonResponse
     {
-        $filters = UsersFilters::getFilters($request);
-
-        $users = $this->userService->getUsers($filters);
+        Gate::authorize('viewAny', User::class);
+        $users = $this->userService->getUsers();
 
         return response()->json($users);
+    }
+
+    public function getUserById(User $user,Request $request): JsonResponse
+    {
+        Gate::authorize('view',$user);
+        return response()->json($user);
+    }
+
+    public function deleteUser(User $user,Request $request): Response
+    {
+        Gate::authorize('delete',$user);
+        $this->userService->deleteUser($user);
+        return response()->noContent();
+    }
+
+    public function restoreUser(User $user,Request $request): Response
+    {
+        Gate::authorize('restore',$user);
+        $user->restore();
+        return response()->noContent();
     }
 }

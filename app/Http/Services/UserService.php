@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Spatie\QueryBuilder\QueryBuilder;
 
 class UserService
 {
@@ -122,8 +123,25 @@ class UserService
         return $status;
     }
 
-    public function getUsers(array $filters): Collection
+    public function getUsers(): Collection
     {
-        return User::all();
+        $authenticatedUserRole = Auth::user()->role;
+
+        $query = User::query();
+        match ($authenticatedUserRole) {
+            UserRole::NationalCoordinator => $query,
+            UserRole::CampusCoordinator => $query->where('campus_id', Auth::user()->campus_id),
+        };
+
+        return QueryBuilder::for($query)
+            ->allowedFilters(['name', 'email', 'role', 'campus_id'])
+            ->defaultSort('name')
+            ->allowedSorts(['name', 'email', 'role', 'campus_id'])
+            ->get();
+    }
+
+    public function deleteUser(User $user): void
+    {
+        $user->delete();
     }
 }

@@ -9,7 +9,8 @@
         "laravel/breeze": "^2.2",
         "laravel/framework": "^11.9",
         "laravel/sanctum": "^4.0",
-        "laravel/tinker": "^2.9"
+        "laravel/tinker": "^2.9",
+        "spatie/laravel-query-builder": "^6.2"
     },
     "require-dev": {
         "beyondcode/laravel-query-detector": "^2.0",

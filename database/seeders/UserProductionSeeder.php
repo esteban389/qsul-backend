@@ -13,7 +13,7 @@ class UserProductionSeeder extends Seeder
     public function run(): void
     {
         User::create([
-            'name' => 'Test User',
+            'name' => env('NATIONAL_COORDINATOR_NAME'),
             'email' => env('NATIONAL_COORDINATOR_EMAIL'),
             'password' => bcrypt(env('NATIONAL_COORDINATOR_PASSWORD')),
             'role'=> 'national_coordinator',

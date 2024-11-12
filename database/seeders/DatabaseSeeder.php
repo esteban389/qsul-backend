@@ -15,9 +15,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        if(App::environment('production')) {
+        if(App::environment('prod')) {
             $this->call(UserProductionSeeder::class);
-        } else {
+        }
+        if (App::environment('local')){
             User::factory()->create([
                 'name' => 'Test User',
                 'email' => 'test@example.com',
