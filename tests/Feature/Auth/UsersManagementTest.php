@@ -25,19 +25,21 @@ test('National coordinator can see all users', function () {
     $response = $this->get('/api/users');
 
     $response->assertStatus(Response::HTTP_OK);
-    $response->assertJsonCount($usersCount);
+    //Total users is 5 but the national coordinator is not included
+    $response->assertJsonCount($usersCount - 1);
 });
 
 test('Campus coordinator can see users in his campus', function () {
     $this->actingAs($this->campus1Coordinator);
 
     $usersCount = User::where('campus_id', $this->campus1->id)->count();
+    // Total users in campus 1 is 2 but the campus coordinator is not included
     $this->assertEquals(2, $usersCount);
 
     $response = $this->get('/api/users');
 
     $response->assertStatus(Response::HTTP_OK);
-    $response->assertJson(fn(AssertableJson $json) => $json->has($usersCount)
+    $response->assertJson(fn(AssertableJson $json) => $json->has($usersCount - 1)
         ->first(
             fn(AssertableJson $json) => $json->where('campus_id', $this->campus1->id)->etc()
         )
@@ -53,7 +55,7 @@ test('campus coordinator can\'t see users in other campuses', function () {
     $response = $this->get('/api/users');
 
     $response->assertStatus(Response::HTTP_OK);
-    $response->assertJson(fn(AssertableJson $json) => $json->has($usersCount)
+    $response->assertJson(fn(AssertableJson $json) => $json->has($usersCount - 1)
         ->first(
             fn(AssertableJson $json) => $json->where('campus_id', $this->campus1->id)->etc()
         )
@@ -94,7 +96,7 @@ test('Can sort users', function () {
     $response = $this->get('/api/users?sort=name');
 
     $response->assertStatus(Response::HTTP_OK);
-    $response->assertJson(fn(AssertableJson $json) => $json->has(7)
+    $response->assertJson(fn(AssertableJson $json) => $json->has(6)
         ->first(fn(AssertableJson $json) => $json->where('name', fn(string $name)=> str($name)->startsWith('A'))->etc())
     );
 });

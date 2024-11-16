@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 test('Unauthenticated user can\'t create new users', function () {
 
-    Storage::fake();
+    Storage::fake('public');
     $avatar = UploadedFile::fake()->image('avatar.jpg');
 
     $response = $this->postJson('/register', [
@@ -26,7 +26,7 @@ test('Unauthenticated user can\'t create new users', function () {
 
 test('Process leader user can\'t create new users', function () {
 
-    Storage::fake();
+    Storage::fake('public');
     $avatar = UploadedFile::fake()->image('avatar.jpg');
 
     $user = User::factory()->withRole(UserRole::from('process_leader'))->create();
@@ -45,7 +45,7 @@ test('Process leader user can\'t create new users', function () {
 
 test('User created by National Coordinator has campus coordinator role', function () {
 
-    Storage::fake();
+    Storage::fake('public');
     $avatar = UploadedFile::fake()->image('avatar.jpg');
 
     $user = User::factory()->withRole(UserRole::NationalCoordinator)->create();
@@ -69,7 +69,7 @@ test('User created by National Coordinator has campus coordinator role', functio
 
 test('User created by Campus Coordinator has process leader role and same campus', function () {
 
-    Storage::fake();
+    Storage::fake('public');
     $avatar = UploadedFile::fake()->image('avatar.jpg');
 
     $campus = Campus::factory()->create();
@@ -96,7 +96,7 @@ test('User created by Campus Coordinator has process leader role and same campus
 
 test('Employee is created when a user is created', function () {
 
-    Storage::fake();
+    Storage::fake('public');
     $avatar = UploadedFile::fake()->image('avatar.jpg');
 
     $campus = Campus::factory()->create();
@@ -131,7 +131,7 @@ test('Employee is created when a user is created', function () {
 
 test('User creation stores an icon sets it on the employee ', function () {
 
-    Storage::fake();
+    Storage::fake('public');
     $avatar = UploadedFile::fake()->image('avatar.jpg');
 
      $campus = Campus::factory()->create();
@@ -149,12 +149,13 @@ test('User creation stores an icon sets it on the employee ', function () {
     ]);
     $response->assertStatus(Response::HTTP_CREATED);
 
-    Storage::assertExists('avatars/' . $avatar->hashName());
+
+    Storage::disk('public')->assertExists('avatars/' . $avatar->hashName());
 });
 
 test('User creation sends notification', function () {
 
-    Storage::fake();
+    Storage::fake('public');
     $avatar = UploadedFile::fake()->image('avatar.jpg');
     Notification::fake();
 

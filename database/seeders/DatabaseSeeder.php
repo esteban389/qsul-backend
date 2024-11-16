@@ -20,8 +20,8 @@ class DatabaseSeeder extends Seeder
         }
         if (App::environment('local')){
             User::factory()->create([
-                'name' => 'Test User',
-                'email' => 'test@example.com',
+                'name' => 'Esteban Andrés Murcia Acuña',
+                'email' => 'estebana.murciaa@gmail.com',
                 'password' => bcrypt('password'),
                 'role' => 'national_coordinator',
             ]);

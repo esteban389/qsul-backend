@@ -19,11 +19,12 @@ class FileService
         $fileName = $avatar->hashName();
         $filePath = self::AVATAR_PATH . DIRECTORY_SEPARATOR  . $fileName;
 
-        if(Storage::exists($filePath)){
+        if(Storage::disk('public')->exists($filePath)){
             return Storage::url($filePath);
         }
 
-        $storedPath = Storage::putFile(self::AVATAR_PATH, $avatar);
+        $storedPath = Storage::disk('public')->putFile(self::AVATAR_PATH, $avatar,'public');
+
         return Storage::url($storedPath);
     }
 }

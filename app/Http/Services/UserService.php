@@ -13,6 +13,7 @@ use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -52,7 +53,7 @@ class UserService
         $path = $this->fileService->storeAvatar($createUserDto->avatar);
 
         $password = Str::random(16);
-        $user = User::create([
+        $user = User::query()->create([
             'name' => $createUserDto->name,
             'email' => $createUserDto->email,
             'password' => Hash::make($password),
@@ -69,12 +70,11 @@ class UserService
 
     /**
      * Creates a token for the user to reset their password.
-     *
-     * @throws ValidationException
+     * If the token can't be sent it will log an alert.
      * @param ForgotPasswordDto $dto
-     * @return string
+     * @return void
      */
-    public function forgotPassword(ForgotPasswordDto $dto): string
+    public function forgotPassword(ForgotPasswordDto $dto): void
     {
         // We will send the password reset link to this user. Once we have attempted
         // to send the link, we will examine the response then see the message we
@@ -84,12 +84,8 @@ class UserService
         );
 
         if ($status != Password::RESET_LINK_SENT) {
-            throw ValidationException::withMessages([
-                'email' => [__($status)],
-            ]);
+            Log::alert('Password reset link not sent', ['status' => $status, 'email' => $dto->email]);
         }
-
-        return $status;
     }
 
     /**
@@ -127,10 +123,9 @@ class UserService
     {
         $authenticatedUserRole = Auth::user()->role;
 
-        $query = User::query();
-        match ($authenticatedUserRole) {
-            UserRole::NationalCoordinator => $query,
-            UserRole::CampusCoordinator => $query->where('campus_id', Auth::user()->campus_id),
+        $query = match ($authenticatedUserRole) {
+            UserRole::NationalCoordinator => User::withTrashed()->whereNot('id', Auth::id()),
+            UserRole::CampusCoordinator => User::query()->whereNot('id',Auth::id())->where('campus_id', Auth::user()->campus_id),
         };
 
         return QueryBuilder::for($query)

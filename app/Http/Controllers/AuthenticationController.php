@@ -18,6 +18,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 
@@ -60,24 +61,24 @@ class AuthenticationController extends Controller
     {
         $createUserDto = CreateUserDto::fromRequest($request);
 
-        $employee = $this->employeeService->store($createUserDto);
-
-        $this->userService->store($createUserDto, $employee);
+        DB::transaction(function () use ($createUserDto) {
+            $employee = $this->employeeService->store($createUserDto);
+            $this->userService->store($createUserDto, $employee);
+        });
 
         return response()->created();
     }
 
     /**
      * Handle an incoming password reset link request.
-     * @throws ValidationException
      * @param ForgotPasswordRequest $request
-     * @return JsonResponse
+     * @return Response
      */
-    public function ForgotPassword(ForgotPasswordRequest $request): JsonResponse
+    public function ForgotPassword(ForgotPasswordRequest $request): Response
     {
         $passwordRequestDto = ForgotPasswordDto::fromRequest($request);
-
-        return \response()->json(["status" => __($this->userService->forgotPassword($passwordRequestDto))]);
+        $this->userService->forgotPassword($passwordRequestDto);
+        return \response()->noContent();
 
     }
 
