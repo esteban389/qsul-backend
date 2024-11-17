@@ -61,6 +61,28 @@ test('Other users cannot create a process', function () {
     $this->assertDatabaseCount('processes', 0);
 });
 
+test('Process can be a subprocess', function () {
+
+    Storage::fake('public');
+    $user = User::factory()->withRole(UserRole::NationalCoordinator)->create();
+    $this->actingAs($user);
+    $icon = UploadedFile::fake()->image('icon.png');
+    $process = Process::factory()->create();
+
+    $response = $this->post('/api/processes', [
+        'name' => 'Subprocess Name',
+        'icon' => $icon,
+        'parent_id' => $process->id,
+    ]);
+
+    $response->assertStatus(Response::HTTP_CREATED);
+    $this->assertDatabaseHas('processes', [
+        'name' => 'Subprocess Name',
+        'parent_id' => $process->id,
+    ]);
+    Storage::disk('public')->assertExists('/icons/' . $icon->hashName());
+});
+
 test('National Coordinator can update a process', function () {
 
     Storage::fake('public');
@@ -78,7 +100,7 @@ test('National Coordinator can update a process', function () {
     $this->assertDatabaseHas('processes', [
         'name' => 'Updated Process Name',
     ]);
-    Storage::disk('public')->assertExists(Process::query()->first()->icon);
+    Storage::disk('public')->assertExists('/icons/' . $icon->hashName());
 });
 
 test('Old icon is deleted when updating a process', function () {
@@ -100,7 +122,7 @@ test('Old icon is deleted when updating a process', function () {
     $this->assertDatabaseHas('processes', [
         'name' => 'Updated Process Name',
     ]);
-    Storage::disk('public')->assertExists(Process::query()->first()->icon);
+    Storage::disk('public')->assertExists('/icons/' . $icon->hashName());
     Storage::disk('public')->assertMissing($oldIcon);
 });
 

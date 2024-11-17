@@ -15,6 +15,7 @@ class Process extends Model
     protected $fillable = [
         'name',
         'icon',
+        'parent_id',
     ];
 
     public static function boot(): void

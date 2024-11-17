@@ -2,6 +2,7 @@
 
 namespace App\Http\Services;
 
+use App\DTOs\DataTransferObject;
 use App\DTOs\University\CreateProcessRequestDto;
 use App\Models\Process;
 use Illuminate\Database\Eloquent\Collection;
@@ -27,9 +28,32 @@ class ProcessService
     public function createProcess(CreateProcessRequestDto $requestDto): void
     {
         $iconPath = $this->fileService->storeIcon($requestDto->icon);
+        $parent = Process::query()->find($requestDto->parent_id);
         Process::query()->create([
+            'name' => $requestDto->name,
+            'icon' => $iconPath,
+            'parent_id' => $parent?->id,
+        ]);
+    }
+
+    public function updateProcess(Process $process, DataTransferObject $requestDto)
+    {
+        $this->fileService->deleteIcon($process->icon);
+        $iconPath = $this->fileService->storeIcon($requestDto->icon);
+        $process->update([
             'name' => $requestDto->name,
             'icon' => $iconPath,
         ]);
     }
+
+    public function deleteProcess(Process $process)
+    {
+        $process->delete();
+    }
+
+    public function restoreProcess(Process $process)
+    {
+        $process->restore();
+    }
+
 }

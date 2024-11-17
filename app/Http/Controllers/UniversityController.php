@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\DTOs\University\CreateCampusRequestDto;
 use App\DTOs\University\CreateProcessRequestDto;
+use App\DTOs\University\UpdateProcessRequestDto;
 use App\Http\Requests\University\CreateCampusRequest;
 use App\Http\Requests\University\CreateProcessRequest;
 use App\Http\Requests\University\UpdateCampusRequest;
+use App\Http\Requests\University\UpdateProcessRequest;
 use App\Http\Services\CampusService;
 use App\Http\Services\ProcessService;
 use App\Models\Campus;
@@ -96,5 +98,33 @@ class UniversityController extends Controller
         });
 
         return response()->created();
+    }
+
+    public function updateProcess(Process $process, UpdateProcessRequest $request): Response
+    {
+        $requestDto = UpdateProcessRequestDto::fromRequest($request);
+        DB::transaction(function () use ($process, $requestDto) {
+            $this->processService->updateProcess($process, $requestDto);
+        });
+
+        return response()->noContent();
+    }
+
+    public function deleteProcess(Process $process): Response
+    {
+        Gate::authorize('delete',Process::class);
+        DB::transaction(function () use ($process) {
+            $this->processService->deleteProcess($process);
+        });
+        return \response()->noContent();
+    }
+
+    public function restoreProcess(Process $process): Response
+    {
+        Gate::authorize('restore',Process::class);
+        DB::transaction(function () use ($process) {
+            $this->processService->restoreProcess($process);
+        });
+        return \response()->noContent();
     }
 }

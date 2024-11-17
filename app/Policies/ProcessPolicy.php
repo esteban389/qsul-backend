@@ -22,4 +22,25 @@ class ProcessPolicy
             ? Response::allow()
             : Response::deny();
     }
+
+    public function update(User $user): Response
+    {
+        return ($user->hasRole(UserRole::NationalCoordinator))
+            ? Response::allow()
+            : Response::deny();
+    }
+
+    public function delete(User $user): Response
+    {
+        return ($user->hasRole(UserRole::NationalCoordinator))
+            ? Response::allow()
+            : Response::deny();
+    }
+
+    public function restore(User $user): Response
+    {
+        return ($user->hasRole(UserRole::NationalCoordinator))
+            ? Response::allow()
+            : Response::deny();
+    }
 }
