@@ -12,7 +12,7 @@ class UserProductionSeeder extends Seeder
      */
     public function run(): void
     {
-        User::create([
+        User::query()->create([
             'name' => env('NATIONAL_COORDINATOR_NAME'),
             'email' => env('NATIONAL_COORDINATOR_EMAIL'),
             'password' => bcrypt(env('NATIONAL_COORDINATOR_PASSWORD')),
