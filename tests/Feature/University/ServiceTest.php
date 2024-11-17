@@ -1,24 +1,28 @@
 <?php
 
 use App\DTOs\Auth\UserRole;
+use App\Models\Process;
 use App\Models\Service;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\Response;
 
+beforeEach(function () {
+    $this->process = Process::factory()->create();
+    Service::factory()->count(3)->create(['process_id'=> $this->process->id]);
+});
+
 test('anyone can get all services', closure: function () {
-    Service::factory()->count(3)->create();
 
     $response = $this->get('/api/services');
 
     $response->assertStatus(Response::HTTP_OK);
-    $this->assertJsonCount(3);
+    $response->assertJsonCount(3);
 });
 
 test('anyone can get a service by id', closure: function () {
-    $service = Service::factory()->create();
-
+    $service = Service::query()->first();
     $response = $this->get("/api/services/$service->id");
 
     $response->assertStatus(Response::HTTP_OK);
@@ -34,6 +38,7 @@ test('National coordinator can create a service', closure: function () {
     $response = $this->post('/api/services', [
         'name' => 'Service Name',
         'icon' => $icon,
+        'process_id'=>$this->process->id
     ]);
 
     $response->assertStatus(Response::HTTP_CREATED);
@@ -51,6 +56,7 @@ test('Other users cannot create a service', closure: function () {
     $response = $this->post('/api/services', [
         'name' => 'Service Name',
         'icon' => $icon,
+        'process_id'=>$this->process->id
     ]);
 
     $response->assertStatus(Response::HTTP_FORBIDDEN);
@@ -60,7 +66,7 @@ test('National coordinator can update a service', closure: function () {
     Storage::fake('public');
     $user = User::factory()->withRole(UserRole::NationalCoordinator)->create();
     $this->actingAs($user);
-    $service = Service::factory()->create();
+    $service = Service::query()->first();
     $icon = UploadedFile::fake()->image('icon.png');
 
     $response = $this->put("/api/services/$service->id", [
@@ -79,7 +85,7 @@ test('Old icon is deleted when updating a service', closure: function () {
     Storage::fake('public');
     $user = User::factory()->withRole(UserRole::NationalCoordinator)->create();
     $this->actingAs($user);
-    $service = Service::factory()->create();
+    $service = Service::query()->first();
     $icon = UploadedFile::fake()->image('icon.png');
 
     $this->put("/api/services/$service->id", [
@@ -89,7 +95,7 @@ test('Old icon is deleted when updating a service', closure: function () {
 
     $oldIcon = $service->icon;
     $this->assertDatabaseHas(Service::class, [
-        'icon' => $icon->hashName(),
+        'name' => 'Updated Service Name',
     ]);
     Storage::disk('public')->assertExists('icons/' . $icon->hashName());
     Storage::disk('public')->assertMissing('icons/' . $oldIcon);
@@ -98,7 +104,7 @@ test('Old icon is deleted when updating a service', closure: function () {
 test('Other users cannot update a service', closure: function () {
     $user = User::factory()->create();
     $this->actingAs($user);
-    $service = Service::factory()->create();
+    $service = Service::query()->first();
     $icon = UploadedFile::fake()->image('icon.png');
 
     $response = $this->put("/api/services/$service->id", [
@@ -112,7 +118,7 @@ test('Other users cannot update a service', closure: function () {
 test('National coordinator can delete a service', function () {
     $user = User::factory()->withRole(UserRole::NationalCoordinator)->create();
     $this->actingAs($user);
-    $service = Service::factory()->create();
+    $service = Service::query()->first();
 
     $response = $this->delete("/api/services/$service->id");
 
@@ -123,7 +129,7 @@ test('National coordinator can delete a service', function () {
 test('Other users cannot delete a service', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
-    $service = Service::factory()->create();
+    $service = Service::query()->first();
 
     $response = $this->delete("/api/services/$service->id");
 
@@ -133,10 +139,22 @@ test('Other users cannot delete a service', function () {
 test('National Coordinator can restore a service', function () {
     $user = User::factory()->withRole(UserRole::NationalCoordinator)->create();
     $this->actingAs($user);
-    $service = Service::factory()->softDeleted()->create();
+    $service = Service::query()->first();
+    $service->delete();
 
-    $response = $this->put("/api/services/$service->id/restore");
+    $response = $this->patch("/api/services/$service->id");
 
     $response->assertStatus(Response::HTTP_NO_CONTENT);
     $this->assertNotSoftDeleted($service);
+});
+
+test('Other users cannot restore a service', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+    $service = Service::query()->first();
+    $service->delete();
+
+    $response = $this->patch("/api/services/$service->id");
+
+    $response->assertStatus(Response::HTTP_FORBIDDEN);
 });

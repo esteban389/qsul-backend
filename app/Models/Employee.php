@@ -20,15 +20,6 @@ class Employee extends Model
         'email',
     ];
 
-    protected static function boot(): void
-    {
-        parent::boot();
-
-        static::creating(function ($employee) {
-            $employee->token = (new NanoId())->generateId(size: 12);
-        });
-    }
-
     public function user(): HasOne
     {
         return $this->hasOne(User::class);
@@ -37,5 +28,14 @@ class Employee extends Model
     public function campus(): BelongsTo
     {
         return $this->belongsTo(Campus::class);
+    }
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::creating(function ($employee) {
+            $employee->token = (new NanoId())->generateId(size: 12);
+        });
     }
 }

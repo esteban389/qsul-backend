@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Lib\NanoId;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,11 +14,21 @@ class Service extends Model
 
     protected $fillable = [
         'name',
-        'icon'
+        'icon',
+        'process_id',
     ];
 
     public function processes(): BelongsTo
     {
         return $this->belongsTo(Process::class);
+    }
+
+    public static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($service) {
+            $service->token = (new NanoId())->generateId(12);
+        });
     }
 }

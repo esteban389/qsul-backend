@@ -8,7 +8,7 @@ use App\Models\Process;
 use Illuminate\Database\Eloquent\Collection;
 use Spatie\QueryBuilder\QueryBuilder;
 
-class ProcessService
+readonly class ProcessService
 {
 
     public function __construct(
@@ -28,11 +28,10 @@ class ProcessService
     public function createProcess(CreateProcessRequestDto $requestDto): void
     {
         $iconPath = $this->fileService->storeIcon($requestDto->icon);
-        $parent = Process::query()->find($requestDto->parent_id);
         Process::query()->create([
             'name' => $requestDto->name,
             'icon' => $iconPath,
-            'parent_id' => $parent?->id,
+            'parent_id' => $requestDto->parent_id,
         ]);
     }
 

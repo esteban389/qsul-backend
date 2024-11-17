@@ -27,6 +27,11 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::put('/processes/{process}', 'updateProcess');
         Route::delete('/processes/{process}', 'deleteProcess');
         Route::patch('/processes/{process}', 'restoreProcess')->withTrashed();
+
+        Route::post('/services', 'createService');
+        Route::put('/services/{service}', 'updateService');
+        Route::delete('/services/{service}', 'deleteService');
+        Route::patch('/services/{service}', 'restoreService')->withTrashed();
     });
 });
 
@@ -36,4 +41,7 @@ Route::group(['middleware' => 'guest'], function () {
 
     Route::get('/processes', [UniversityController::class,'getProcesses']);
     Route::get('/processes/{process}', [UniversityController::class,'getProcessById']);
+
+    Route::get('/services', [UniversityController::class,'getServices']);
+    Route::get('/services/{service}', [UniversityController::class,'getServiceById']);
 });

@@ -4,15 +4,21 @@ namespace App\Http\Controllers;
 
 use App\DTOs\University\CreateCampusRequestDto;
 use App\DTOs\University\CreateProcessRequestDto;
+use App\DTOs\University\CreateServiceRequestDto;
 use App\DTOs\University\UpdateProcessRequestDto;
+use App\DTOs\University\UpdateServiceRequestDto;
 use App\Http\Requests\University\CreateCampusRequest;
 use App\Http\Requests\University\CreateProcessRequest;
+use App\Http\Requests\University\CreateServiceRequest;
 use App\Http\Requests\University\UpdateCampusRequest;
 use App\Http\Requests\University\UpdateProcessRequest;
+use App\Http\Requests\University\UpdateServiceRequest;
 use App\Http\Services\CampusService;
 use App\Http\Services\ProcessService;
+use App\Http\Services\ServiceService;
 use App\Models\Campus;
 use App\Models\Process;
+use App\Models\Service;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
@@ -24,6 +30,7 @@ class UniversityController extends Controller
     public function __construct(
         public readonly CampusService  $campusService,
         public readonly ProcessService $processService,
+        public readonly ServiceService $serviceService
     )
     {
     }
@@ -124,6 +131,53 @@ class UniversityController extends Controller
         Gate::authorize('restore',Process::class);
         DB::transaction(function () use ($process) {
             $this->processService->restoreProcess($process);
+        });
+        return \response()->noContent();
+    }
+
+    public function getServices(): JsonResponse
+    {
+        $services = $this->serviceService->getServices();
+        return response()->json($services);
+    }
+
+    public function getServiceById(Service $service): JsonResponse
+    {
+        return response()->json($service);
+    }
+
+    public function createService(CreateServiceRequest $request): Response
+    {
+        $requestDto = CreateServiceRequestDto::fromRequest($request);
+        DB::transaction(function () use ($requestDto) {
+            $this->serviceService->createService($requestDto);
+        });
+        return response()->created();
+    }
+
+    public function updateService(Service $service, UpdateServiceRequest $request): Response
+    {
+        $requestDto = UpdateServiceRequestDto::fromRequest($request);
+        DB::transaction(function () use ($service, $requestDto) {
+            $this->serviceService->updateService($service, $requestDto);
+        });
+        return response()->noContent();
+    }
+
+    public function deleteService(Service $service): Response
+    {
+        Gate::authorize('delete', Service::class);
+        DB::transaction(function () use ($service) {
+            $this->serviceService->deleteService($service);
+        });
+        return \response()->noContent();
+    }
+
+    public function restoreService(Service $service): Response
+    {
+        Gate::authorize('restore', Service::class);
+        DB::transaction(function () use ($service) {
+            $this->serviceService->restoreService($service);
         });
         return \response()->noContent();
     }
