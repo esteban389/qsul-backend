@@ -1,7 +1,8 @@
 <?php
 
-namespace App\DTOs;
+namespace App\DTOs\Auth;
 
+use App\DTOs\DataTransferObject;
 use App\Http\Requests\Auth\CreateUserRequest;
 use Illuminate\Http\UploadedFile;
 
@@ -21,7 +22,7 @@ readonly class CreateUserDto implements DataTransferObject
      */
     public static function fromRequest($request): CreateUserDto
     {
-        return new CreateUserDto(
+        return new self(
             email: $request->validated('email'),
             name: $request->validated('name'),
             avatar: $request->validated('avatar'),

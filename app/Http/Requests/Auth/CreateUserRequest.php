@@ -2,13 +2,12 @@
 
 namespace App\Http\Requests\Auth;
 
-use App\DTOs\UserRole;
+use App\DTOs\Auth\UserRole;
 use App\Models\Campus;
 use App\Models\User;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rules\File;
 
 /**
  * Represents a create user request.
@@ -36,7 +35,7 @@ class CreateUserRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'avatar' => ['required', File::image()->max(1024)],
+            'avatar' => ['required', 'image', 'max:2048'],
             'campus_id' => ['nullable','integer','exists:'.Campus::class.',id'],
         ];
     }

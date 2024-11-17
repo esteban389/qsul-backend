@@ -1,7 +1,8 @@
 <?php
 
-namespace App\DTOs;
+namespace App\DTOs\Auth;
 
+use App\DTOs\DataTransferObject;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
 
 readonly class ForgotPasswordDto implements DataTransferObject

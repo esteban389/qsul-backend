@@ -2,10 +2,10 @@
 
 namespace App\Http\Services;
 
-use App\DTOs\CreateUserDto;
-use App\DTOs\ForgotPasswordDto;
-use App\DTOs\ResetPasswordDto;
-use App\DTOs\UserRole;
+use App\DTOs\Auth\CreateUserDto;
+use App\DTOs\Auth\ForgotPasswordDto;
+use App\DTOs\Auth\ResetPasswordDto;
+use App\DTOs\Auth\UserRole;
 use App\Events\UserCreated;
 use App\Models\Employee;
 use App\Models\User;
@@ -19,7 +19,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Spatie\QueryBuilder\QueryBuilder;
 
-class UserService
+readonly class UserService
 {
 
     public function __construct(private FileService $fileService)

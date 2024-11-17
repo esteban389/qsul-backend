@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\DTOs\UserRole;
+use App\DTOs\Auth\UserRole;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -62,5 +62,10 @@ class User extends Authenticatable
     public function campus(): BelongsTo
     {
         return $this->belongsTo(Campus::class);
+    }
+
+    public function hasRole(UserRole $role): bool
+    {
+        return $this->role === $role;
     }
 }

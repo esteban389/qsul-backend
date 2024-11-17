@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\DTOs\CreateUserDto;
-use App\DTOs\ForgotPasswordDto;
-use App\DTOs\ResetPasswordDto;
+use App\DTOs\Auth\CreateUserDto;
+use App\DTOs\Auth\ForgotPasswordDto;
+use App\DTOs\Auth\ResetPasswordDto;
 use App\Http\Requests\Auth\CreateUserRequest;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\LoginRequest;
@@ -12,7 +12,6 @@ use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Http\Services\EmployeeService;
 use App\Http\Services\UserService;
 use App\Models\User;
-use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -20,7 +19,6 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Validation\ValidationException;
 
 class AuthenticationController extends Controller
 {
@@ -29,12 +27,6 @@ class AuthenticationController extends Controller
     {
     }
 
-    /**
-     * Handle an incoming authentication request.
-     * @param LoginRequest $request
-     * @return Response
-     * @throws ValidationException
-     */
     public function Login(LoginRequest $request): Response
     {
         $request->authenticate();
@@ -51,12 +43,6 @@ class AuthenticationController extends Controller
         return response()->noContent();
     }
 
-    /**
-     * Handle an incoming registration request.
-     * @param CreateUserRequest $request
-     * @return Response
-     * @throws ValidationException
-     */
     public function Register(CreateUserRequest $request): Response
     {
         $createUserDto = CreateUserDto::fromRequest($request);
@@ -69,11 +55,6 @@ class AuthenticationController extends Controller
         return response()->created();
     }
 
-    /**
-     * Handle an incoming password reset link request.
-     * @param ForgotPasswordRequest $request
-     * @return Response
-     */
     public function ForgotPassword(ForgotPasswordRequest $request): Response
     {
         $passwordRequestDto = ForgotPasswordDto::fromRequest($request);
@@ -82,12 +63,6 @@ class AuthenticationController extends Controller
 
     }
 
-    /**
-     * Handle an incoming password reset request.
-     * @param ResetPasswordRequest $request
-     * @return JsonResponse
-     * @throws ValidationException
-     */
     public function ResetPassword(ResetPasswordRequest $request): JsonResponse
     {
 
@@ -96,11 +71,6 @@ class AuthenticationController extends Controller
         return \response()->json(["status" => __($this->userService->resetPassword($dto))]);
     }
 
-    /**
-     * Destroy an authenticated session.
-     * @param Request $request
-     * @return Response
-     */
     public function Logout(Request $request): Response
     {
         Auth::guard('web')->logout();
@@ -122,10 +92,7 @@ class AuthenticationController extends Controller
 
     }
 
-    /**
-     * @throws AuthorizationException
-     */
-    public function ShowUsers(Request $request): JsonResponse
+    public function getUsers(): JsonResponse
     {
         Gate::authorize('viewAny', User::class);
         $users = $this->userService->getUsers();
@@ -133,20 +100,20 @@ class AuthenticationController extends Controller
         return response()->json($users);
     }
 
-    public function getUserById(User $user,Request $request): JsonResponse
+    public function getUserById(User $user): JsonResponse
     {
         Gate::authorize('view',$user);
         return response()->json($user);
     }
 
-    public function deleteUser(User $user,Request $request): Response
+    public function deleteUser(User $user): Response
     {
         Gate::authorize('delete',$user);
         $this->userService->deleteUser($user);
         return response()->noContent();
     }
 
-    public function restoreUser(User $user,Request $request): Response
+    public function restoreUser(User $user): Response
     {
         Gate::authorize('restore',$user);
         $user->restore();

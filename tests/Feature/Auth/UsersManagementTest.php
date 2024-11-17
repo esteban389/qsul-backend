@@ -1,6 +1,6 @@
 <?php
 
-use App\DTOs\UserRole;
+use App\DTOs\Auth\UserRole;
 use App\Models\Campus;
 use App\Models\User;
 use Illuminate\Testing\Fluent\AssertableJson;

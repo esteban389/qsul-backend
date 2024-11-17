@@ -19,7 +19,7 @@ class CampusFactory extends Factory
         return [
             'name' => $this->faker->name(),
             'address' => $this->faker->address(),
-            'icon' => $this->faker->url(),
+            'icon' => $this->faker->md5(),
             'token' => $this->faker->unique()->word(),
         ];
     }
