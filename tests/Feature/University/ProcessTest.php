@@ -43,7 +43,7 @@ test('National Coordinator can create a process', function () {
     $this->assertDatabaseHas('processes', [
         'name' => 'Process Name',
     ]);
-    Storage::disk('public')->assertExists(Process::query()->first()->icon);
+    Storage::disk('public')->assertExists('/icons/' . $icon->hashName());
 });
 
 test('Other users cannot create a process', function () {

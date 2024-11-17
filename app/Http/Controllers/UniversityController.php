@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\DTOs\University\CreateCampusRequestDto;
+use App\DTOs\University\CreateProcessRequestDto;
 use App\Http\Requests\University\CreateCampusRequest;
 use App\Http\Requests\University\CreateProcessRequest;
 use App\Http\Requests\University\UpdateCampusRequest;

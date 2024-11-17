@@ -16,7 +16,7 @@ readonly class CreateProcessRequestDto implements DataTransferObject
     {
     }
 
-    public static function fromRequest($request): DataTransferObject
+    public static function fromRequest($request): CreateProcessRequestDto
     {
         return new self(
             name: $request->validated('name'),
