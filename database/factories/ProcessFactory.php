@@ -2,12 +2,13 @@
 
 namespace Database\Factories;
 
+use App\Models\Process;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Employee>
+ * @extends Factory<Process>
  */
-class EmployeeFactory extends Factory
+class ProcessFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -18,9 +19,7 @@ class EmployeeFactory extends Factory
     {
         return [
             'name' => $this->faker->name(),
-            'email' => $this->faker->unique()->safeEmail(),
-            'token' => $this->faker->unique()->uuid(),
-            'avatar' => $this->faker->md5(),
+            'icon' => $this->faker->md5(),
         ];
     }
 }

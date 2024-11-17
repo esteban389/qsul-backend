@@ -1,6 +1,6 @@
 <?php
 
-use App\DTOs\UserRole;
+use App\DTOs\Auth\UserRole;
 use App\Models\Campus;
 use App\Models\Employee;
 use App\Models\User;
@@ -21,7 +21,7 @@ test('Unauthenticated user can\'t create new users', function () {
         'avatar' => $avatar,
     ]);
     $this->assertGuest();
-    $response->assertStatus(401);
+    $response->assertStatus(Response::HTTP_UNAUTHORIZED);
 });
 
 test('Process leader user can\'t create new users', function () {
@@ -148,7 +148,6 @@ test('User creation stores an icon sets it on the employee ', function () {
         'avatar' => $avatar,
     ]);
     $response->assertStatus(Response::HTTP_CREATED);
-
 
     Storage::disk('public')->assertExists('avatars/' . $avatar->hashName());
 });

@@ -2,7 +2,7 @@
 
 namespace App\Http\Services;
 
-use App\DTOs\CreateUserDto;
+use App\DTOs\Auth\CreateUserDto;
 use App\Models\Employee;
 
 readonly class EmployeeService

@@ -20,7 +20,7 @@ class Employee extends Model
         'email',
     ];
 
-    protected static function boot()
+    protected static function boot(): void
     {
         parent::boot();
 
