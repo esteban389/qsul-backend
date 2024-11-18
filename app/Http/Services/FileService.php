@@ -51,4 +51,13 @@ readonly class FileService
         }
         return Storage::disk('public')->delete($iconPath);
     }
+
+    public function deleteAvatar(mixed $avatar): bool
+    {
+        $avatarPath = str_replace(Storage::url(''), '', $avatar);
+        if(!Storage::disk('public')->exists($avatarPath)){
+            return true;
+        }
+        return Storage::disk('public')->delete($avatarPath);
+    }
 }

@@ -48,7 +48,7 @@ class AuthenticationController extends Controller
         $createUserDto = CreateUserDto::fromRequest($request);
 
         DB::transaction(function () use ($createUserDto) {
-            $employee = $this->employeeService->store($createUserDto);
+            $employee = $this->employeeService->createEmployeeFromUser($createUserDto);
             $this->userService->store($createUserDto, $employee);
         });
 

@@ -3,20 +3,26 @@
 namespace App\Http\Controllers;
 
 use App\DTOs\University\CreateCampusRequestDto;
+use App\DTOs\University\CreateEmployeeRequestDto;
 use App\DTOs\University\CreateProcessRequestDto;
 use App\DTOs\University\CreateServiceRequestDto;
+use App\DTOs\University\UpdateEmployeeRequestDto;
 use App\DTOs\University\UpdateProcessRequestDto;
 use App\DTOs\University\UpdateServiceRequestDto;
 use App\Http\Requests\University\CreateCampusRequest;
+use App\Http\Requests\University\CreateEmployeeRequest;
 use App\Http\Requests\University\CreateProcessRequest;
 use App\Http\Requests\University\CreateServiceRequest;
 use App\Http\Requests\University\UpdateCampusRequest;
+use App\Http\Requests\University\UpdateEmployeeRequest;
 use App\Http\Requests\University\UpdateProcessRequest;
 use App\Http\Requests\University\UpdateServiceRequest;
 use App\Http\Services\CampusService;
+use App\Http\Services\EmployeeService;
 use App\Http\Services\ProcessService;
 use App\Http\Services\ServiceService;
 use App\Models\Campus;
+use App\Models\Employee;
 use App\Models\Process;
 use App\Models\Service;
 use Illuminate\Http\JsonResponse;
@@ -30,7 +36,8 @@ class UniversityController extends Controller
     public function __construct(
         public readonly CampusService  $campusService,
         public readonly ProcessService $processService,
-        public readonly ServiceService $serviceService
+        public readonly ServiceService $serviceService,
+        public readonly EmployeeService $employeeService
     )
     {
     }
@@ -178,6 +185,54 @@ class UniversityController extends Controller
         Gate::authorize('restore', Service::class);
         DB::transaction(function () use ($service) {
             $this->serviceService->restoreService($service);
+        });
+        return \response()->noContent();
+    }
+
+    public function getEmployees(): JsonResponse
+    {
+        $employees = $this->employeeService->getEmployees();
+        return response()->json($employees);
+    }
+
+    public function getEmployeeById(Employee $employee): JsonResponse
+    {
+        return response()->json($employee);
+    }
+
+    public function createEmployee(CreateEmployeeRequest $request): Response
+    {
+        $requestDto = CreateEmployeeRequestDto::fromRequest($request);
+        DB::transaction(function () use ($requestDto) {
+            $this->employeeService->createEmployee($requestDto);
+        });
+        return response()->created();
+    }
+
+    public function updateEmployee(Employee $employee, UpdateEmployeeRequest $request): Response
+    {
+        Gate::authorize('update', $employee);
+        $requestDto = UpdateEmployeeRequestDto::fromRequest($request);
+        DB::transaction(function () use ($employee, $requestDto) {
+            $this->employeeService->updateEmployee($employee, $requestDto);
+        });
+        return response()->noContent();
+    }
+
+    public function deleteEmployee(Employee $employee): Response
+    {
+        Gate::authorize('delete', $employee);
+        DB::transaction(function () use ($employee) {
+            $this->employeeService->deleteEmployee($employee);
+        });
+        return \response()->noContent();
+    }
+
+    public function restoreEmployee(Employee $employee): Response
+    {
+        Gate::authorize('restore', $employee);
+        DB::transaction(function () use ($employee) {
+            $this->employeeService->restoreEmployee($employee);
         });
         return \response()->noContent();
     }

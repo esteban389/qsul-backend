@@ -60,6 +60,7 @@ test('Campus coordinator can create an employee inside their campus', function (
         'name' => 'Employee Name',
         'email' => 'employee@example.com',
         'campus_id' => $this->campus->id,
+        'process_id' => $this->process->id
     ]);
     Storage::disk('public')->assertExists('avatars/' . $employeeImage->hashName());
 });
@@ -67,9 +68,13 @@ test('Campus coordinator can create an employee inside their campus', function (
 test('Process leader can create an employee inside their process', function () {
 
     Storage::fake('public');
+    $employee = Employee::factory()->create([
+        'campus_id' => $this->campus->id,
+        'process_id' => $this->process2->id
+    ]);
     $user = User::factory()->withRole(UserRole::ProcessLeader)->create([
         'campus_id' => $this->campus->id,
-        'process_id' => $this->process->id
+        'employee_id' => $employee->id,
     ]);
     $employeeImage = UploadedFile::fake()->image('employee.jpg');
 
@@ -84,7 +89,7 @@ test('Process leader can create an employee inside their process', function () {
         'name' => 'Employee Name',
         'email' => 'employee@example.com',
         'campus_id' => $this->campus->id,
-        'process_id' => $this->process->id
+        'process_id' => $this->process2->id
     ]);
     Storage::disk('public')->assertExists('avatars/' . $employeeImage->hashName());
 });
@@ -92,9 +97,13 @@ test('Process leader can create an employee inside their process', function () {
 test('Process leader can\'t create an employee outside their process', function () {
 
     Storage::fake('public');
+    $employee = Employee::factory()->create([
+        'campus_id' => $this->campus->id,
+        'process_id' => $this->process2->id
+    ]);
     $user = User::factory()->withRole(UserRole::ProcessLeader)->create([
         'campus_id' => $this->campus->id,
-        'process_id' => $this->process->id
+        'employee_id' => $employee->id,
     ]);
     $employeeImage = UploadedFile::fake()->image('employee.jpg');
 
@@ -116,45 +125,6 @@ test('Process leader can\'t create an employee outside their process', function 
     Storage::disk('public')->assertMissing('avatars/' . $employeeImage->hashName());
 });
 
-test('Campus coordinator can delete an employee inside their campus', function () {
-
-    $user = User::factory()->withRole(UserRole::CampusCoordinator)->create([
-        'campus_id' => $this->campus->id
-    ]);
-
-    $response = $this->actingAs($user)->delete('/api/employees/' . $this->employee[0]->id);
-
-    $response->assertStatus(Response::HTTP_NO_CONTENT);
-    $this->assertSoftDeleted($this->employee[0]);
-});
-
-test('Process leader can delete an employee inside their process', function () {
-
-    $user = User::factory()->withRole(UserRole::ProcessLeader)->create([
-        'campus_id' => $this->campus->id,
-        'process_id' => $this->process->id
-    ]);
-
-    $response = $this->actingAs($user)->delete('/api/employees/' . $this->employee[0]->id);
-
-    $response->assertStatus(Response::HTTP_NO_CONTENT);
-    $this->assertSoftDeleted($this->employee[0]);
-});
-
-test('Process leader can\'t delete an employee outside their process', function () {
-
-    $user = User::factory()->withRole(UserRole::ProcessLeader)->create([
-        'campus_id' => $this->campus->id,
-        'process_id' => $this->process->id
-    ]);
-
-    $this->employee[1]->update(['process_id' => $this->process2->id]);
-    $response = $this->actingAs($user)->delete('/api/employees/' . $this->employee[1]->id);
-
-    $response->assertStatus(Response::HTTP_FORBIDDEN);
-    $this->assertNotSoftDeleted($this->employee[1]);
-});
-
 test('Campus coordinator can update an employee inside their campus', function () {
 
     Storage::fake('public');
@@ -167,6 +137,7 @@ test('Campus coordinator can update an employee inside their campus', function (
         'name' => 'Employee Name Updated',
         'email' => 'updated-employee@example.com',
         'avatar' => $employeeImage,
+        'process_id' => $this->process->id
     ]);
 
     $response->assertStatus(Response::HTTP_NO_CONTENT);
@@ -184,7 +155,7 @@ test('Process leader can update an employee inside their process', function () {
     Storage::fake('public');
     $user = User::factory()->withRole(UserRole::ProcessLeader)->create([
         'campus_id' => $this->campus->id,
-        'process_id' => $this->process->id
+        'employee_id' => $this->employee[0]->id
     ]);
     $employeeImage = UploadedFile::fake()->image('updated-employee.jpg');
 
@@ -236,7 +207,7 @@ test('Process leader can\'t update an employee outside their process', function 
     Storage::fake('public');
     $user = User::factory()->withRole(UserRole::ProcessLeader)->create([
         'campus_id' => $this->campus->id,
-        'process_id' => $this->process->id
+        'employee_id' => $this->employee[0]->id
     ]);
     $employeeImage = UploadedFile::fake()->image('updated-employee.jpg');
 
@@ -259,6 +230,85 @@ test('Process leader can\'t update an employee outside their process', function 
     Storage::disk('public')->assertMissing('avatars/' . $employeeImage->hashName());
 });
 
+test('Process leader can\'t change employee\'s process', function () {
+
+        Storage::fake('public');
+        $user = User::factory()->withRole(UserRole::ProcessLeader)->create([
+            'campus_id' => $this->campus->id,
+            'employee_id' => $this->employee[0]->id
+        ]);
+        $employeeImage = UploadedFile::fake()->image('updated-employee.jpg');
+
+        $response = $this->actingAs($user)->put('/api/employees/' . $this->employee[0]->id, [
+            'name' => 'Employee Name Updated',
+            'email' => 'example@example.com',
+            'avatar' => $employeeImage,
+            'process_id' => $this->process2->id
+        ]);
+
+        $response->assertStatus(Response::HTTP_FORBIDDEN);
+        $this->assertDatabaseMissing('employees', [
+            'id' => $this->employee[0]->id,
+            'name' => 'Employee Name Updated',
+            'email' => 'example@example.com',
+            'campus_id' => $this->campus->id,
+            'process_id' => $this->process2->id
+        ]);
+        Storage::disk('public')->assertMissing('avatars/' . $employeeImage->hashName());
+});
+
+test('Campus coordinator can delete an employee inside their campus', function () {
+
+    $user = User::factory()->withRole(UserRole::CampusCoordinator)->create([
+        'campus_id' => $this->campus->id
+    ]);
+
+    $response = $this->actingAs($user)->delete('/api/employees/' . $this->employee[0]->id);
+
+    $response->assertStatus(Response::HTTP_NO_CONTENT);
+    $this->assertSoftDeleted($this->employee[0]);
+});
+
+test('Campus coordinator can\'t delete an employee outside their campus', function () {
+
+    $user = User::factory()->withRole(UserRole::CampusCoordinator)->create([
+        'campus_id' => $this->campus->id
+    ]);
+
+    $this->employee[1]->update(['campus_id' => $this->campus2->id]);
+    $response = $this->actingAs($user)->delete('/api/employees/' . $this->employee[1]->id);
+
+    $response->assertStatus(Response::HTTP_FORBIDDEN);
+    $this->assertNotSoftDeleted($this->employee[1]);
+});
+
+test('Process leader can delete an employee inside their process', function () {
+
+    $user = User::factory()->withRole(UserRole::ProcessLeader)->create([
+        'campus_id' => $this->campus->id,
+        'employee_id' => $this->employee[0]->id
+    ]);
+
+    $response = $this->actingAs($user)->delete('/api/employees/' . $this->employee[0]->id);
+
+    $response->assertStatus(Response::HTTP_NO_CONTENT);
+    $this->assertSoftDeleted($this->employee[0]);
+});
+
+test('Process leader can\'t delete an employee outside their process', function () {
+
+    $user = User::factory()->withRole(UserRole::ProcessLeader)->create([
+        'campus_id' => $this->campus->id,
+        'employee_id' => $this->employee[0]->id
+    ]);
+
+    $this->employee[1]->update(['process_id' => $this->process2->id]);
+    $response = $this->actingAs($user)->delete('/api/employees/' . $this->employee[1]->id);
+
+    $response->assertStatus(Response::HTTP_FORBIDDEN);
+    $this->assertNotSoftDeleted($this->employee[1]);
+});
+
 test('Campus coordinator can restore an employee inside their campus', function () {
 
     $user = User::factory()->withRole(UserRole::CampusCoordinator)->create([
@@ -270,7 +320,7 @@ test('Campus coordinator can restore an employee inside their campus', function 
     $response = $this->actingAs($user)->patch('/api/employees/' . $this->employee[0]->id);
 
     $response->assertStatus(Response::HTTP_NO_CONTENT);
-    $this->assertSoftDeleted($this->employee[0]);
+    $this->assertNotSoftDeleted($this->employee[0]);
 });
 
 test('Campus coordinator can\'t restore an employee outside their campus', function () {
@@ -285,14 +335,14 @@ test('Campus coordinator can\'t restore an employee outside their campus', funct
     $response = $this->actingAs($user)->patch('/api/employees/' . $this->employee[1]->id);
 
     $response->assertStatus(Response::HTTP_FORBIDDEN);
-    $this->assertNotSoftDeleted($this->employee[1]);
+    $this->assertSoftDeleted($this->employee[1]);
 });
 
 test('Process leader can restore an employee inside their process', function () {
 
     $user = User::factory()->withRole(UserRole::ProcessLeader)->create([
         'campus_id' => $this->campus->id,
-        'process_id' => $this->process->id
+        'employee_id' => $this->employee[1]->id
     ]);
 
     $this->employee[0]->delete();
@@ -300,14 +350,14 @@ test('Process leader can restore an employee inside their process', function () 
     $response = $this->actingAs($user)->patch('/api/employees/' . $this->employee[0]->id);
 
     $response->assertStatus(Response::HTTP_NO_CONTENT);
-    $this->assertSoftDeleted($this->employee[0]);
+    $this->assertNotSoftDeleted($this->employee[0]);
 });
 
 test('Process leader can\'t restore an employee outside their process', function () {
 
     $user = User::factory()->withRole(UserRole::ProcessLeader)->create([
         'campus_id' => $this->campus->id,
-        'process_id' => $this->process->id
+        'employee_id' => $this->employee[0]->id
     ]);
 
     $this->employee[1]->update(['process_id' => $this->process2->id]);
@@ -316,5 +366,5 @@ test('Process leader can\'t restore an employee outside their process', function
     $response = $this->actingAs($user)->patch('/api/employees/' . $this->employee[1]->id);
 
     $response->assertStatus(Response::HTTP_FORBIDDEN);
-    $this->assertNotSoftDeleted($this->employee[1]);
+    $this->assertSoftDeleted($this->employee[1]);
 });

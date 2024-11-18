@@ -32,6 +32,11 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::put('/services/{service}', 'updateService');
         Route::delete('/services/{service}', 'deleteService');
         Route::patch('/services/{service}', 'restoreService')->withTrashed();
+
+        Route::post('/employees', 'createEmployee');
+        Route::put('/employees/{employee}', 'updateEmployee');
+        Route::delete('/employees/{employee}', 'deleteEmployee');
+        Route::patch('/employees/{employee}', 'restoreEmployee')->withTrashed();
     });
 });
 
@@ -44,4 +49,7 @@ Route::group(['middleware' => 'guest'], function () {
 
     Route::get('/services', [UniversityController::class,'getServices']);
     Route::get('/services/{service}', [UniversityController::class,'getServiceById']);
+
+    Route::get('/employees', [UniversityController::class,'getEmployees']);
+    Route::get('/employees/{employee}', [UniversityController::class,'getEmployeeById']);
 });

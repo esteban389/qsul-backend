@@ -18,6 +18,7 @@ class Employee extends Model
         'avatar',
         'campus_id',
         'email',
+        'process_id'
     ];
 
     public function user(): HasOne
@@ -28,6 +29,11 @@ class Employee extends Model
     public function campus(): BelongsTo
     {
         return $this->belongsTo(Campus::class);
+    }
+
+    public function process(): HasOne
+    {
+        return $this->hasOne(Process::class);
     }
 
     protected static function boot(): void
