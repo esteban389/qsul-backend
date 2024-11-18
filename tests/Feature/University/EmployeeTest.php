@@ -4,6 +4,7 @@ use App\DTOs\Auth\UserRole;
 use App\Models\Campus;
 use App\Models\Employee;
 use App\Models\Process;
+use App\Models\Service;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -37,6 +38,24 @@ test('anyone can get an employee by id', function () {
         'name' => $this->employee[0]->name,
         'email' => $this->employee[0]->email,
         'campus_id' => $this->campus->id,
+    ]);
+});
+
+test('anyone can get an employee\'s services', function () {
+
+    $process = Process::factory()->create();
+    $service = Service::factory()->create([
+        'process_id' => $process->id
+    ]);
+    $this->employee[0]->services()->attach($service);
+
+    $response = $this->get('/api/employees/' . $this->employee[0]->token . '/services');
+
+    $response->assertStatus(Response::HTTP_OK);
+    $response->assertJsonFragment([
+        'id' => $service->id,
+        'name' => $service->name,
+        'employee_id' => $this->employee[0]->id
     ]);
 });
 
@@ -123,6 +142,113 @@ test('Process leader can\'t create an employee outside their process', function 
     ]);
 
     Storage::disk('public')->assertMissing('avatars/' . $employeeImage->hashName());
+});
+
+test('Campus coordinator can assign a service to an employee inside their campus', function () {
+
+    $user = User::factory()->withRole(UserRole::CampusCoordinator)->create([
+        'campus_id' => $this->campus->id
+    ]);
+    $service = Service::factory()->create([
+        'process_id' => $this->process->id
+    ]);
+
+    $response = $this->actingAs($user)->post('/api/employees/' . $this->employee[0]->token . '/services', [
+        'service_id' => $service->id
+    ]);
+
+    $response->assertStatus(Response::HTTP_CREATED);
+    $this->assertDatabaseHas('employee_service', [
+        'employee_id' => $this->employee[0]->id,
+        'service_id' => $service->id
+    ]);
+});
+
+test('Campus coordinator can\'t assign a service to an employee outside their campus', function () {
+
+    $user = User::factory()->withRole(UserRole::CampusCoordinator)->create([
+        'campus_id' => $this->campus->id
+    ]);
+    $service = Service::factory()->create([
+        'process_id' => $this->process->id
+    ]);
+
+    $this->employee[1]->update(['campus_id' => $this->campus2->id]);
+
+    $response = $this->actingAs($user)->post('/api/employees/' . $this->employee[1]->token . '/services', [
+        'service_id' => $service->id
+    ]);
+
+    $response->assertStatus(Response::HTTP_FORBIDDEN);
+    $this->assertDatabaseMissing('employee_service', [
+        'employee_id' => $this->employee[1]->id,
+        'service_id' => $service->id
+    ]);
+});
+
+test('Process leader can assign a service to an employee inside their process', function () {
+
+    $user = User::factory()->withRole(UserRole::ProcessLeader)->create([
+        'campus_id' => $this->campus->id,
+        'employee_id' => $this->employee[0]->id
+    ]);
+    $service = Service::factory()->create([
+        'process_id' => $this->process->id
+    ]);
+
+    $response = $this->actingAs($user)->post('/api/employees/' . $this->employee[1]->token . '/services', [
+        'service_id' => $service->id
+    ]);
+
+    $response->assertStatus(Response::HTTP_CREATED);
+    $this->assertDatabaseHas('employee_service', [
+        'employee_id' => $this->employee[1]->id,
+        'service_id' => $service->id
+    ]);
+});
+
+test('Process leader can\'t assign a service from a different process to an employee', function () {
+
+    $user = User::factory()->withRole(UserRole::ProcessLeader)->create([
+        'campus_id' => $this->campus->id,
+        'employee_id' => $this->employee[0]->id
+    ]);
+    $service = Service::factory()->create([
+        'process_id' => $this->process2->id
+    ]);
+
+    $response = $this->actingAs($user)->post('/api/employees/' . $this->employee[0]->token . '/services', [
+        'service_id' => $service->id
+    ]);
+
+    $response->assertStatus(Response::HTTP_FORBIDDEN);
+    $this->assertDatabaseMissing('employee_service', [
+        'employee_id' => $this->employee[0]->id,
+        'service_id' => $service->id
+    ]);
+});
+
+test('Process leader can\'t assign a service to an employee outside their process', function () {
+
+    $user = User::factory()->withRole(UserRole::ProcessLeader)->create([
+        'campus_id' => $this->campus->id,
+        'employee_id' => $this->employee[0]->id
+    ]);
+    $service = Service::factory()->create([
+        'process_id' => $this->process->id
+    ]);
+
+    $this->employee[1]->update(['process_id' => $this->process2->id]);
+
+    $response = $this->actingAs($user)->post('/api/employees/' . $this->employee[1]->token . '/services', [
+        'service_id' => $service->id
+    ]);
+
+    $response->assertStatus(Response::HTTP_FORBIDDEN);
+    $this->assertDatabaseMissing('employee_service', [
+        'employee_id' => $this->employee[1]->id,
+        'service_id' => $service->id
+    ]);
 });
 
 test('Campus coordinator can update an employee inside their campus', function () {

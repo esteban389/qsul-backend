@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\DTOs\Auth\UserRole;
 use App\Models\Employee;
+use App\Models\Service;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
@@ -44,6 +45,16 @@ class EmployeePolicy
     {
         return ($user->hasRole(UserRole::CampusCoordinator) && ($employee->campus_id === $user->campus_id))
         || ($user->hasRole(UserRole::ProcessLeader) && ($employee->process_id === $user->employee()->first()->process_id) && ($employee->campus_id === $user->campus_id))
+            ? Response::allow()
+            : Response::deny();
+    }
+
+    public function addService(User $user, Employee $employee, Service $service): Response
+    {
+        return ($user->hasRole(UserRole::CampusCoordinator) && ($employee->campus_id === $user->campus_id))
+        || ($user->hasRole(UserRole::ProcessLeader) &&
+            ($employee->process_id === $user->employee()->first()->process_id) && ($employee->campus_id === $user->campus_id) &&
+            ($service->process_id === $user->process_id))
             ? Response::allow()
             : Response::deny();
     }

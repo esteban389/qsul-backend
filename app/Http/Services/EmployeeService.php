@@ -94,4 +94,9 @@ readonly class EmployeeService
         $employee->restore();
     }
 
+    public function addServiceToEmployee(Employee $employee, mixed $serviceId): void
+    {
+        $employee->services()->attach($serviceId);
+    }
+
 }

@@ -9,6 +9,7 @@ use App\DTOs\University\CreateServiceRequestDto;
 use App\DTOs\University\UpdateEmployeeRequestDto;
 use App\DTOs\University\UpdateProcessRequestDto;
 use App\DTOs\University\UpdateServiceRequestDto;
+use App\Http\Requests\University\AddServiceToEmployeeRequest;
 use App\Http\Requests\University\CreateCampusRequest;
 use App\Http\Requests\University\CreateEmployeeRequest;
 use App\Http\Requests\University\CreateProcessRequest;
@@ -204,6 +205,12 @@ class UniversityController extends Controller
         return response()->json($employee);
     }
 
+    public function getEmployeeServices(Employee $employee): JsonResponse
+    {
+        $services = $employee->services;
+        return response()->json($services);
+    }
+
     public function createEmployee(CreateEmployeeRequest $request): Response
     {
         $requestDto = CreateEmployeeRequestDto::fromRequest($request);
@@ -221,6 +228,15 @@ class UniversityController extends Controller
             $this->employeeService->updateEmployee($employee, $requestDto);
         });
         return response()->noContent();
+    }
+
+    public function addEmployeeService(Employee $employee, AddServiceToEmployeeRequest $request): Response
+    {
+        $serviceId = $request->validated('service_id');
+        DB::transaction(function () use ($employee, $serviceId) {
+            $this->employeeService->addServiceToEmployee($employee, $serviceId);
+        });
+        return response()->created();
     }
 
     public function deleteEmployee(Employee $employee): Response

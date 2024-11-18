@@ -37,6 +37,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::put('/employees/{employee:token}', 'updateEmployee');
         Route::delete('/employees/{employee:token}', 'deleteEmployee');
         Route::patch('/employees/{employee:token}', 'restoreEmployee')->withTrashed();
+        Route::post('/employees/{employee:token}/services', 'addEmployeeService');
     });
 });
 
@@ -52,4 +53,5 @@ Route::group(['middleware' => 'guest'], function () {
 
     Route::get('/employees', [UniversityController::class,'getEmployees']);
     Route::get('/employees/{employee:token}', [UniversityController::class,'getEmployeeById']);
+    Route::get('/employees/{employee:token}/services', [UniversityController::class,'getEmployeeServices']);
 });
