@@ -7,14 +7,30 @@ cmds = [
     "cp /assets/worker-*.conf /etc/supervisor/conf.d/",
     "cp /assets/supervisord.conf /etc/supervisord.conf",
     "chmod +x /assets/start.sh",
+    # Laravel specific setup
+    "php artisan config:clear",
+    "php artisan cache:clear",
+
+    # Set up storage permissions
+    "mkdir -p /app/storage/logs",
+    "mkdir -p /app/storage/framework/sessions",
+    "mkdir -p /app/storage/framework/views",
+    "mkdir -p /app/storage/framework/cache",
+    "mkdir -p /app/bootstrap/cache",
+
+    # Set permissions
     "chown -R www-data:www-data /app/storage",
     "chown -R www-data:www-data /app/bootstrap/cache",
     "chmod -R 775 /app/storage",
     "chmod -R 775 /app/bootstrap/cache",
-    # Create log file and set permissions
     "touch /app/storage/logs/laravel.log",
     "chown www-data:www-data /app/storage/logs/laravel.log",
     "chmod 664 /app/storage/logs/laravel.log",
+
+    # Cache configuration for better performance
+    "php artisan config:cache",
+    "php artisan route:cache",
+    "php artisan view:cache",
     "..."
 ]
 
