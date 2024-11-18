@@ -14,7 +14,7 @@ cmds = [
     # Create log file and set permissions
     "touch /app/storage/logs/laravel.log",
     "chown www-data:www-data /app/storage/logs/laravel.log",
-    "chmod 664 /app/storage/logs/laravel.log"
+    "chmod 664 /app/storage/logs/laravel.log",
     "..."
 ]
 
