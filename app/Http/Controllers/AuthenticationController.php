@@ -82,16 +82,6 @@ class AuthenticationController extends Controller
         return response()->noContent();
     }
 
-    public function DisableUser()
-    {
-
-    }
-
-    public function EnableUser()
-    {
-
-    }
-
     public function getUsers(): JsonResponse
     {
         Gate::authorize('viewAny', User::class);
@@ -103,6 +93,8 @@ class AuthenticationController extends Controller
     public function getUserById(User $user): JsonResponse
     {
         Gate::authorize('view',$user);
+        $user->load('campus');
+        $user->load('employee');
         return response()->json($user);
     }
 

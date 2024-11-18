@@ -109,7 +109,6 @@ test('National coordinator can get any user by id', function () {
     $this->assertNotNull($user);
 
     $response = $this->get("/api/users/{$user->id}");
-
     $response->assertStatus(Response::HTTP_OK);
     $response->assertJson([
         'id' => $user->id,
