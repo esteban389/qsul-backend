@@ -90,5 +90,6 @@
     "login": "Login",
     "Password: :password": "Your password is: :password",
     "Account created": "Account created",
-    "Cannot delete campus with associated users or employees": "Cannot delete campus with associated users"
+    "Cannot delete campus with associated users or employees": "Cannot delete campus with associated users",
+    "Cannot delete a process with services": "Cannot delete a process with services"
 }

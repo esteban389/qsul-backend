@@ -2,6 +2,7 @@
 
 use App\DTOs\Auth\UserRole;
 use App\Models\Process;
+use App\Models\Service;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -154,6 +155,19 @@ test('National Coordinator can delete a process', function () {
 
     $response->assertStatus(Response::HTTP_NO_CONTENT);
     $this->assertSoftDeleted($process);
+});
+
+test('Process with services cannot be deleted', function () {
+
+    $user = User::factory()->withRole(UserRole::NationalCoordinator)->create();
+    $this->actingAs($user);
+    $process = Process::factory()->create();
+    $service = Service::factory()->create(['process_id' => $process->id]);
+
+    $response = $this->delete("/api/processes/{$process->token}");
+
+    $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
+    $this->assertNotSoftDeleted($process);
 });
 
 test('Other users cannot delete a process', function () {

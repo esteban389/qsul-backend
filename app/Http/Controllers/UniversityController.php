@@ -21,6 +21,7 @@ use App\Http\Services\CampusService;
 use App\Http\Services\EmployeeService;
 use App\Http\Services\ProcessService;
 use App\Http\Services\ServiceService;
+use App\Http\Services\UserService;
 use App\Models\Campus;
 use App\Models\Employee;
 use App\Models\Process;
@@ -37,7 +38,8 @@ class UniversityController extends Controller
         public readonly CampusService  $campusService,
         public readonly ProcessService $processService,
         public readonly ServiceService $serviceService,
-        public readonly EmployeeService $employeeService
+        public readonly EmployeeService $employeeService,
+        public readonly UserService $userService
     )
     {
     }
@@ -126,7 +128,7 @@ class UniversityController extends Controller
 
     public function deleteProcess(Process $process): Response
     {
-        Gate::authorize('delete',Process::class);
+        Gate::authorize('delete',$process);
         DB::transaction(function () use ($process) {
             $this->processService->deleteProcess($process);
         });
@@ -224,6 +226,7 @@ class UniversityController extends Controller
         Gate::authorize('delete', $employee);
         DB::transaction(function () use ($employee) {
             $this->employeeService->deleteEmployee($employee);
+            $this->userService->deleteUser($employee->user);
         });
         return \response()->noContent();
     }
