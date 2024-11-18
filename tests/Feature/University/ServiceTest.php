@@ -23,7 +23,7 @@ test('anyone can get all services', closure: function () {
 
 test('anyone can get a service by id', closure: function () {
     $service = Service::query()->first();
-    $response = $this->get("/api/services/$service->id");
+    $response = $this->get("/api/services/$service->token");
 
     $response->assertStatus(Response::HTTP_OK);
     $response->assertJson($service->toArray());
@@ -69,7 +69,7 @@ test('National coordinator can update a service', closure: function () {
     $service = Service::query()->first();
     $icon = UploadedFile::fake()->image('icon.png');
 
-    $response = $this->put("/api/services/$service->id", [
+    $response = $this->put("/api/services/$service->token", [
         'name' => 'Updated Service Name',
         'icon' => $icon,
     ]);
@@ -88,7 +88,7 @@ test('Old icon is deleted when updating a service', closure: function () {
     $service = Service::query()->first();
     $icon = UploadedFile::fake()->image('icon.png');
 
-    $this->put("/api/services/$service->id", [
+    $this->put("/api/services/$service->token", [
         'name' => 'Updated Service Name',
         'icon' => $icon,
     ]);
@@ -107,7 +107,7 @@ test('Other users cannot update a service', closure: function () {
     $service = Service::query()->first();
     $icon = UploadedFile::fake()->image('icon.png');
 
-    $response = $this->put("/api/services/$service->id", [
+    $response = $this->put("/api/services/$service->token", [
         'name' => 'Updated Service Name',
         'icon' => $icon,
     ]);
@@ -120,7 +120,7 @@ test('National coordinator can delete a service', function () {
     $this->actingAs($user);
     $service = Service::query()->first();
 
-    $response = $this->delete("/api/services/$service->id");
+    $response = $this->delete("/api/services/$service->token");
 
     $response->assertStatus(Response::HTTP_NO_CONTENT);
     $this->assertSoftDeleted($service);
@@ -131,7 +131,7 @@ test('Other users cannot delete a service', function () {
     $this->actingAs($user);
     $service = Service::query()->first();
 
-    $response = $this->delete("/api/services/$service->id");
+    $response = $this->delete("/api/services/$service->token");
 
     $response->assertStatus(Response::HTTP_FORBIDDEN);
 });
@@ -142,7 +142,7 @@ test('National Coordinator can restore a service', function () {
     $service = Service::query()->first();
     $service->delete();
 
-    $response = $this->patch("/api/services/$service->id");
+    $response = $this->patch("/api/services/$service->token");
 
     $response->assertStatus(Response::HTTP_NO_CONTENT);
     $this->assertNotSoftDeleted($service);
@@ -154,7 +154,7 @@ test('Other users cannot restore a service', function () {
     $service = Service::query()->first();
     $service->delete();
 
-    $response = $this->patch("/api/services/$service->id");
+    $response = $this->patch("/api/services/$service->token");
 
     $response->assertStatus(Response::HTTP_FORBIDDEN);
 });

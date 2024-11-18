@@ -21,7 +21,7 @@ test('anyone can get a process by id', function () {
 
     $process = Process::factory()->create();
 
-    $response = $this->get("/api/processes/{$process->id}");
+    $response = $this->get("/api/processes/{$process->token}");
 
     $response->assertStatus(Response::HTTP_OK);
     $response->assertJson($process->toArray());
@@ -91,7 +91,7 @@ test('National Coordinator can update a process', function () {
     $process = Process::factory()->create();
     $icon = UploadedFile::fake()->image('icon.png');
 
-    $response = $this->put("/api/processes/{$process->id}", [
+    $response = $this->put("/api/processes/{$process->token}", [
         'name' => 'Updated Process Name',
         'icon' => $icon,
     ]);
@@ -113,7 +113,7 @@ test('Old icon is deleted when updating a process', function () {
     $oldIcon = $process->icon;
     $process->update(['icon' => $oldIcon]);
 
-    $response = $this->put("/api/processes/{$process->id}", [
+    $response = $this->put("/api/processes/{$process->token}", [
         'name' => 'Updated Process Name',
         'icon' => $icon,
     ]);
@@ -133,7 +133,7 @@ test('Other users cannot update a process', function () {
     $process = Process::factory()->create();
     $icon = UploadedFile::fake()->image('icon.png');
 
-    $response = $this->put("/api/processes/{$process->id}", [
+    $response = $this->put("/api/processes/{$process->token}", [
         'name' => 'Updated Process Name',
         'icon' => $icon,
     ]);
@@ -150,7 +150,7 @@ test('National Coordinator can delete a process', function () {
     $this->actingAs($user);
     $process = Process::factory()->create();
 
-    $response = $this->delete("/api/processes/{$process->id}");
+    $response = $this->delete("/api/processes/{$process->token}");
 
     $response->assertStatus(Response::HTTP_NO_CONTENT);
     $this->assertSoftDeleted($process);
@@ -162,7 +162,7 @@ test('Other users cannot delete a process', function () {
     $this->actingAs($user);
     $process = Process::factory()->create();
 
-    $response = $this->delete("/api/processes/{$process->id}");
+    $response = $this->delete("/api/processes/{$process->token}");
 
     $response->assertStatus(Response::HTTP_FORBIDDEN);
     $this->assertNotSoftDeleted($process);
@@ -175,7 +175,7 @@ test('National Coordinator can restore a process', function () {
     $process = Process::factory()->create();
     $process->delete();
 
-    $response = $this->patch("/api/processes/{$process->id}");
+    $response = $this->patch("/api/processes/{$process->token}");
 
     $response->assertStatus(Response::HTTP_NO_CONTENT);
     $this->assertNotSoftDeleted($process);
@@ -188,7 +188,7 @@ test('Other users cannot restore a process', function () {
     $process = Process::factory()->create();
     $process->delete();
 
-    $response = $this->patch("/api/processes/{$process->id}");
+    $response = $this->patch("/api/processes/{$process->token}");
 
     $response->assertStatus(Response::HTTP_FORBIDDEN);
     $this->assertSoftDeleted($process);
