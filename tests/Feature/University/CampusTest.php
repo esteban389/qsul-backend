@@ -159,6 +159,19 @@ test('National coordinator can delete a campus', function () {
     $this->assertSoftDeleted($campus);
 });
 
+test('Campus with associated user or employee cannot be deleted', function (){
+    $campusCoordinator = User::factory()->withRole(UserRole::NationalCoordinator)->create();
+    $this->actingAs($campusCoordinator);
+    $campus = Campus::factory()->create();
+    $user = User::factory()->create(['campus_id' => $campus->id]);
+    $employee = User::factory()->create(['campus_id' => $campus->id]);
+
+    $response = $this->delete("/api/campuses/{$campus->token}");
+
+    $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
+    $this->assertNotSoftDeleted($campus);
+});
+
 test('No one else can delete a campus', function () {
     $campusCoordinator = User::factory()->withRole(UserRole::CampusCoordinator)->create();
     $this->actingAs($campusCoordinator);

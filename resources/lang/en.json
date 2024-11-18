@@ -89,5 +89,6 @@
     "You can log in by clicking the button below.": "You can log in by clicking the button below.",
     "login": "Login",
     "Password: :password": "Your password is: :password",
-    "Account created": "Account created"
+    "Account created": "Account created",
+    "Cannot delete campus with associated users or employees": "Cannot delete campus with associated users"
 }

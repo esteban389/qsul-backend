@@ -75,7 +75,7 @@ class UniversityController extends Controller
 
     public function deleteCampus(Campus $campus): Response
     {
-        Gate::authorize('delete', Campus::class);
+        Gate::authorize('delete', $campus);
         DB::transaction(function () use ($campus) {
             $this->campusService->deleteCampus($campus);
         });

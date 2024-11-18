@@ -3,8 +3,11 @@
 namespace App\Policies;
 
 use App\DTOs\Auth\UserRole;
+use App\Models\Campus;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
+use Illuminate\Support\Facades\Lang;
+use Symfony\Component\HttpFoundation\Response as SymphonyResponse;
 
 class CampusPolicy
 {
@@ -38,11 +41,17 @@ class CampusPolicy
     /**
      * Determine whether the user can delete the campus.
      */
-    public function delete(User $user): Response
+    public function delete(User $user, Campus $campus): Response
     {
-        return ($user->hasRole(UserRole::NationalCoordinator))
-            ? Response::allow()
-            : Response::deny();
+        if(!$user->hasRole(UserRole::NationalCoordinator)) {
+            return Response::deny();
+        }
+
+        if($campus->users()->exists() || $campus->employees()->exists()) {
+            return Response::denyWithStatus(SymphonyResponse::HTTP_UNPROCESSABLE_ENTITY,Lang::get("Cannot delete campus with associated users or employees"));
+        }
+
+        return Response::allow();
     }
 
     /**

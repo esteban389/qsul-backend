@@ -89,5 +89,6 @@
     "You can log in by clicking the button below.": "Puedes iniciar sesión haciendo click en el botón de abajo.",
     "login": "Iniciar sesión",
     "Password: :password": "Tu contraseña es: :password",
-    "Account created": "Cuenta creada"
+    "Account created": "Cuenta creada",
+    "Cannot delete campus with associated users or employees": "No se puede eliminar un campus con usuarios o empleados asociados"
 }
