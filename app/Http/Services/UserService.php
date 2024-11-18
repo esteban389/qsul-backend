@@ -46,7 +46,7 @@ readonly class UserService
 
         if($campus === null){
             throw ValidationException::withMessages([
-                'campus_id' => ['Campus is required for National Coordinator'],
+                'campus_id' => [__('required')],
             ]);
         }
 
