@@ -139,4 +139,9 @@ readonly class UserService
     {
         $user->delete();
     }
+
+    public function restoreUser(User $user): void
+    {
+        $user->restore();
+    }
 }

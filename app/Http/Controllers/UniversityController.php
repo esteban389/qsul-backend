@@ -199,6 +199,8 @@ class UniversityController extends Controller
 
     public function getEmployeeById(Employee $employee): JsonResponse
     {
+        $employee->load('campus', 'process');
+        $employee->url = $employee->campus->token . "/" . $employee->process->token . "/" . $employee->token;
         return response()->json($employee);
     }
 
@@ -226,7 +228,9 @@ class UniversityController extends Controller
         Gate::authorize('delete', $employee);
         DB::transaction(function () use ($employee) {
             $this->employeeService->deleteEmployee($employee);
-            $this->userService->deleteUser($employee->user);
+            if($employee->user()->exists()){
+                $this->userService->deleteUser($employee->user);
+            }
         });
         return \response()->noContent();
     }
@@ -236,6 +240,9 @@ class UniversityController extends Controller
         Gate::authorize('restore', $employee);
         DB::transaction(function () use ($employee) {
             $this->employeeService->restoreEmployee($employee);
+            if($employee->user()->withTrashed()->exists()){
+                $this->userService->restoreUser($employee->user()->withTrashed()->first());
+            }
         });
         return \response()->noContent();
     }

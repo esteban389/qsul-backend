@@ -31,9 +31,9 @@ class Employee extends Model
         return $this->belongsTo(Campus::class);
     }
 
-    public function process(): HasOne
+    public function process(): BelongsTo
     {
-        return $this->hasOne(Process::class);
+        return $this->belongsTo(Process::class);
     }
 
     protected static function boot(): void

@@ -2,6 +2,7 @@
 
 use App\DTOs\Auth\UserRole;
 use App\Models\Campus;
+use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Symfony\Component\HttpFoundation\Response;
@@ -169,6 +170,22 @@ test('National coordinator can disable any user', function () {
     $response->assertStatus(Response::HTTP_NO_CONTENT);
 });
 
+test('Associated employee can be deleted when user is deleted', function () {
+
+    $this->actingAs($this->nationalCoordinator);
+
+    $employee = Employee::factory()->create();
+    $this->assertNotNull($employee);
+    $user = User::factory()->create(['employee_id' => $employee->id]);
+    $this->assertNotNull($user);
+
+    $response = $this->delete("/api/users/{$user->id}", ['employee' => true]);
+
+    $response->assertStatus(Response::HTTP_NO_CONTENT);
+    $this->assertSoftDeleted($user);
+    $this->assertSoftDeleted($employee);
+});
+
 test('Campus coordinator can disable any user in his campus', function () {
 
     $this->actingAs($this->campus1Coordinator);
@@ -216,6 +233,25 @@ test('National coordinator can enable any user', function () {
     $response = $this->patch("/api/users/{$user->id}");
 
     $response->assertStatus(Response::HTTP_NO_CONTENT);
+});
+
+test('Associated employee can be restored when user is restored', function () {
+
+    $this->actingAs($this->nationalCoordinator);
+
+    $employee = Employee::factory()->create();
+    $this->assertNotNull($employee);
+    $user = User::factory()->create(['employee_id' => $employee->id]);
+    $user->delete();
+    $employee->delete();
+    $this->assertSoftDeleted($user);
+    $this->assertSoftDeleted($employee);
+
+    $response = $this->patch("/api/users/{$user->id}", ['employee' => true]);
+
+    $response->assertStatus(Response::HTTP_NO_CONTENT);
+    $this->assertNotSoftDeleted($user);
+    $this->assertNotSoftDeleted($employee);
 });
 
 test('Campus coordinator can enable any user in his campus', function () {

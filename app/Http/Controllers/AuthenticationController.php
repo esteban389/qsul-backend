@@ -98,17 +98,27 @@ class AuthenticationController extends Controller
         return response()->json($user);
     }
 
-    public function deleteUser(User $user): Response
+    public function deleteUser(User $user, Request $request): Response
     {
         Gate::authorize('delete',$user);
-        $this->userService->deleteUser($user);
+        DB::transaction(function () use ($user, $request) {
+            $this->userService->deleteUser($user);
+            if($request->exists('employee')){
+                $this->employeeService->deleteEmployee($user->employee);
+            }
+        });
         return response()->noContent();
     }
 
-    public function restoreUser(User $user): Response
+    public function restoreUser(User $user, Request $request): Response
     {
         Gate::authorize('restore',$user);
-        $user->restore();
+        DB::transaction(function () use ($user, $request) {
+            $this->userService->restoreUser($user);
+            if($request->exists('employee') && $user->employee()->withTrashed()->exists()){
+                $this->employeeService->restoreEmployee($user->employee()->withTrashed()->first());
+            }
+        });
         return response()->noContent();
     }
 }

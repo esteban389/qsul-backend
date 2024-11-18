@@ -269,6 +269,19 @@ test('Campus coordinator can delete an employee inside their campus', function (
     $this->assertSoftDeleted($this->employee[0]);
 });
 
+test('User associated with employee is deleted when employee is deleted', function (){
+    $user = User::factory()->create([
+        'employee_id' => $this->employee[0]->id
+    ]);
+    $authenticatingUser = User::factory()->withRole(UserRole::CampusCoordinator)->create([
+        'campus_id' => $this->campus->id
+    ]);
+    $this->actingAs($authenticatingUser)->delete('/api/employees/' . $this->employee[0]->token);
+
+    $this->assertSoftDeleted($this->employee[0]);
+    $this->assertSoftDeleted($user);
+});
+
 test('Campus coordinator can\'t delete an employee outside their campus', function () {
 
     $user = User::factory()->withRole(UserRole::CampusCoordinator)->create([
@@ -321,6 +334,22 @@ test('Campus coordinator can restore an employee inside their campus', function 
 
     $response->assertStatus(Response::HTTP_NO_CONTENT);
     $this->assertNotSoftDeleted($this->employee[0]);
+});
+
+test('User associated with employee is restored when employee is restored', function (){
+    $user = User::factory()->create([
+        'employee_id' => $this->employee[0]->id
+    ]);
+    $authenticatingUser = User::factory()->withRole(UserRole::CampusCoordinator)->create([
+        'campus_id' => $this->campus->id
+    ]);
+    $user->delete();
+    $this->employee[0]->delete();
+
+    $this->actingAs($authenticatingUser)->patch('/api/employees/' . $this->employee[0]->token);
+
+    $this->assertNotSoftDeleted($this->employee[0]);
+    $this->assertNotSoftDeleted($user);
 });
 
 test('Campus coordinator can\'t restore an employee outside their campus', function () {
