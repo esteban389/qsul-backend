@@ -8,8 +8,8 @@ cmds = [
     "cp /assets/supervisord.conf /etc/supervisord.conf",
     "chmod +x /assets/start.sh",
     # Laravel specific setup
+    "php artisan migrate",
     "php artisan config:clear",
-    "php artisan cache:clear",
 
     # Set up storage permissions
     "mkdir -p /app/storage/logs",
@@ -28,7 +28,6 @@ cmds = [
     "chmod 664 /app/storage/logs/laravel.log",
 
     # Cache configuration for better performance
-    "php artisan migrate",
     "php artisan config:cache",
     "php artisan route:cache",
     "php artisan view:cache",
