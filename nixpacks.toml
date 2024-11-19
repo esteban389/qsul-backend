@@ -28,6 +28,7 @@ cmds = [
     "chmod 664 /app/storage/logs/laravel.log",
 
     # Cache configuration for better performance
+    "php artisan migrate",
     "php artisan config:cache",
     "php artisan route:cache",
     "php artisan view:cache",
