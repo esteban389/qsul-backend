@@ -74,14 +74,19 @@ readonly class EmployeeService
         if(isset($requestDto->process_id) && Auth::user()->role === UserRole::ProcessLeader){
             throw new AuthorizationException();
         }
-        $this->fileService->deleteAvatar($employee->avatar);
-        $path = $this->fileService->storeAvatar($requestDto->avatar);
-        $employee->update([
+        if($requestDto->avatar) {
+            $this->fileService->deleteAvatar($employee->avatar);
+            $path = $this->fileService->storeAvatar($requestDto->avatar);
+        }
+
+        $data = array_filter([
             'name' => $requestDto->name,
             'email' => $requestDto->email,
-            'avatar' => $path,
             'process_id' => $process_id,
-        ]);
+            'avatar' => $path ?? $employee->avatar,
+        ], fn($value) => $value !== null);
+
+        $employee->update($data);
     }
 
     public function deleteEmployee(Employee $employee): void

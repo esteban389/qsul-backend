@@ -276,7 +276,69 @@ test('Campus coordinator can update an employee inside their campus', function (
     Storage::disk('public')->assertExists('avatars/' . $employeeImage->hashName());
 });
 
+test('Campus coordinator can update an employee\'s process', function () {
+
+    $user = User::factory()->withRole(UserRole::CampusCoordinator)->create([
+        'campus_id' => $this->campus->id
+    ]);
+
+    $response = $this->actingAs($user)->put('/api/employees/' . $this->employee[0]->token, [
+        'process_id' => $this->process2->id
+    ]);
+
+    $response->assertStatus(Response::HTTP_NO_CONTENT);
+    $this->assertDatabaseHas('employees', [
+        'id' => $this->employee[0]->id,
+        'process_id' => $this->process2->id
+    ]);
+});
+
+test('Process leader cannot update an employee\'s process', function () {
+
+    $user = User::factory()->withRole(UserRole::ProcessLeader)->create([
+        'campus_id' => $this->campus->id,
+        'employee_id' => $this->employee[0]->id
+    ]);
+
+    $response = $this->actingAs($user)->put('/api/employees/' . $this->employee[1]->token, [
+        'process_id' => $this->process2->id
+    ]);
+
+    $response->assertStatus(Response::HTTP_FORBIDDEN);
+    $this->assertDatabaseMissing('employees', [
+        'id' => $this->employee[1]->id,
+        'process_id' => $this->process2->id
+    ]);
+});
+
 test('Process leader can update an employee inside their process', function () {
+
+    Storage::fake('public');
+    $user = User::factory()->withRole(UserRole::ProcessLeader)->create([
+        'campus_id' => $this->campus->id,
+        'employee_id' => $this->employee[0]->id
+    ]);
+    $employeeImage = UploadedFile::fake()->image('updated-employee.jpg');
+
+    $response = $this->actingAs($user)->put('/api/employees/' . $this->employee[1]->token, [
+        'name' => 'Employee Name Updated',
+        'email' => 'updated-employee@example.com',
+        'avatar' => $employeeImage,
+    ]);
+
+    $response->assertStatus(Response::HTTP_NO_CONTENT);
+    $this->assertDatabaseHas('employees', [
+        'id' => $this->employee[1]->id,
+        'name' => 'Employee Name Updated',
+        'email' => 'updated-employee@example.com',
+        'campus_id' => $this->campus->id,
+        'process_id' => $this->process->id
+    ]);
+    Storage::disk('public')->assertExists('avatars/' . $employeeImage->hashName());
+});
+
+test('Employee with user associated cannot be updated', function () {
+    User::factory()->create(['employee_id' => $this->employee[1]]);
 
     Storage::fake('public');
     $user = User::factory()->withRole(UserRole::ProcessLeader)->create([
@@ -291,15 +353,14 @@ test('Process leader can update an employee inside their process', function () {
         'avatar' => $employeeImage,
     ]);
 
-    $response->assertStatus(Response::HTTP_NO_CONTENT);
-    $this->assertDatabaseHas('employees', [
-        'id' => $this->employee[0]->id,
+    $response->assertStatus(Response::HTTP_FORBIDDEN);
+    $this->assertDatabaseMissing('employees', [
+        'id' => $this->employee[1]->id,
         'name' => 'Employee Name Updated',
         'email' => 'updated-employee@example.com',
-        'campus_id' => $this->campus->id,
-        'process_id' => $this->process->id
+        'campus_id' => $this->campus2->id
     ]);
-    Storage::disk('public')->assertExists('avatars/' . $employeeImage->hashName());
+    Storage::disk('public')->assertMissing('avatars/' . $employeeImage->hashName());
 });
 
 test('Campus coordinator can\'t update an employee outside their campus', function () {

@@ -222,7 +222,6 @@ class UniversityController extends Controller
 
     public function updateEmployee(Employee $employee, UpdateEmployeeRequest $request): Response
     {
-        Gate::authorize('update', $employee);
         $requestDto = UpdateEmployeeRequestDto::fromRequest($request);
         DB::transaction(function () use ($employee, $requestDto) {
             $this->employeeService->updateEmployee($employee, $requestDto);

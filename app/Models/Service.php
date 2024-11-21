@@ -19,7 +19,7 @@ class Service extends Model
         'process_id',
     ];
 
-    public function processes(): BelongsTo
+    public function process(): BelongsTo
     {
         return $this->belongsTo(Process::class);
     }

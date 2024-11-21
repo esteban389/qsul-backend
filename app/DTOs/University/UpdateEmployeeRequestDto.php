@@ -9,9 +9,9 @@ readonly class UpdateEmployeeRequestDto implements DataTransferObject
 {
 
     public function __construct(
-        public string $name,
-        public string $email,
-        public UploadedFile $avatar,
+        public ?string       $name = null,
+        public ?string       $email = null,
+        public ?UploadedFile $avatar = null,
         public ?int $process_id = null,
     )
     {
