@@ -36,10 +36,12 @@ readonly class ServiceService
 
     public function updateService(Service $service, UpdateServiceRequestDto $requestDto): void
     {
-        $this->fileService->deleteIcon($service->icon);
-        $icon = $this->fileService->storeIcon($requestDto->icon);
+        if ($requestDto->icon) {
+            $this->fileService->deleteIcon($service->icon);
+            $icon = $this->fileService->storeIcon($requestDto->icon);
+        }
         $service->update([
-            'name' => $requestDto->name,
+            'name' => $requestDto->name ?? $service->name,
             'icon' => $icon,
         ]);
     }

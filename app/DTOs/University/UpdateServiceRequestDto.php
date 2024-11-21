@@ -8,8 +8,8 @@ use Illuminate\Http\UploadedFile;
 readonly class UpdateServiceRequestDto implements DataTransferObject
 {
     public function __construct(
-        public string $name,
-        public UploadedFile $icon,
+        public ?string $name = null,
+        public ?UploadedFile $icon = null,
     )
     {
     }
