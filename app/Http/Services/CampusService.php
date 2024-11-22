@@ -34,13 +34,17 @@ readonly class CampusService
 
     public function updateCampus(Campus $campus, CreateCampusRequestDto $requestDto): void
     {
+        if($requestDto->icon){
         $this->fileService->deleteIcon($campus->icon);
         $iconPath = $this->fileService->storeIcon($requestDto->icon);
-        $campus->update([
+        }
+
+        $data = array_filter([
             'name' => $requestDto->name,
             'address' => $requestDto->address,
-            'icon' => $iconPath,
-        ]);
+            'icon' => $iconPath ?? null,
+        ], fn($value) => $value !== null);
+        $campus->update($data);
     }
 
      public function deleteCampus(Campus $campus): void
