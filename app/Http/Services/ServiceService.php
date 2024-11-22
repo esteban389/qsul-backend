@@ -40,10 +40,11 @@ readonly class ServiceService
             $this->fileService->deleteIcon($service->icon);
             $icon = $this->fileService->storeIcon($requestDto->icon);
         }
-        $service->update([
-            'name' => $requestDto->name ?? $service->name,
-            'icon' => $icon,
-        ]);
+        $data = array_filter([
+            'name' => $requestDto->name,
+            'icon' => $icon ?? null,
+        ], fn($value) => $value !== null);
+        $service->update($data);
     }
 
     public function deleteService(Service $service)
