@@ -28,6 +28,7 @@ class UpdateProcessRequest extends FormRequest
         return [
             'name' => ['string'],
             'icon' => ['image', 'max:2048'],
+            'parent_id' => ['exists:processes,id'],
         ];
     }
 }

@@ -2,8 +2,8 @@
 
 namespace App\Http\Services;
 
-use App\DTOs\DataTransferObject;
 use App\DTOs\University\CreateProcessRequestDto;
+use App\DTOs\University\UpdateProcessRequestDto;
 use App\Models\Process;
 use Illuminate\Database\Eloquent\Collection;
 use Spatie\QueryBuilder\QueryBuilder;
@@ -35,14 +35,18 @@ readonly class ProcessService
         ]);
     }
 
-    public function updateProcess(Process $process, DataTransferObject $requestDto)
+    public function updateProcess(Process $process, UpdateProcessRequestDto $requestDto)
     {
-        $this->fileService->deleteIcon($process->icon);
-        $iconPath = $this->fileService->storeIcon($requestDto->icon);
-        $process->update([
+        if ($requestDto->icon) {
+            $this->fileService->deleteIcon($process->icon);
+            $iconPath = $this->fileService->storeIcon($requestDto->icon);
+        }
+        $data = array_filter([
             'name' => $requestDto->name,
-            'icon' => $iconPath,
-        ]);
+            'icon' => $iconPath ?? null,
+            'parent_id' => $requestDto->parent_id,
+        ], fn($value) => $value !== null);
+        $process->update($data);
     }
 
     public function deleteProcess(Process $process)

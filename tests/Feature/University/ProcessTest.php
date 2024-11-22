@@ -89,17 +89,21 @@ test('National Coordinator can update a process', function () {
     Storage::fake('public');
     $user = User::factory()->withRole(UserRole::NationalCoordinator)->create();
     $this->actingAs($user);
-    $process = Process::factory()->create();
+    $process2 = Process::factory()->create();
+    $process = Process::factory()->create(['parent_id' => $process2->id]);
     $icon = UploadedFile::fake()->image('icon.png');
+    $process3 = Process::factory()->create();
 
     $response = $this->put("/api/processes/{$process->token}", [
         'name' => 'Updated Process Name',
         'icon' => $icon,
+        'parent_id' => $process3->id,
     ]);
 
     $response->assertStatus(Response::HTTP_NO_CONTENT);
     $this->assertDatabaseHas('processes', [
         'name' => 'Updated Process Name',
+        'parent_id' => $process3->id,
     ]);
     Storage::disk('public')->assertExists('/icons/' . $icon->hashName());
 });
