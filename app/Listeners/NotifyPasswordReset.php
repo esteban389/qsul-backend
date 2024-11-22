@@ -4,11 +4,9 @@ namespace App\Listeners;
 
 use App\Notifications\PasswordResetNotification;
 use Illuminate\Auth\Events\PasswordReset;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Notification;
 
-class NotifyPaswordReset
+class NotifyPasswordReset
 {
     /**
      * Create the event listener.

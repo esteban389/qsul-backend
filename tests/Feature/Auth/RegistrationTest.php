@@ -92,6 +92,10 @@ test('User created by Campus Coordinator has process leader role and same campus
         'role' => UserRole::from('process_leader')->value,
         'campus_id' => $user->campus->id,
     ]);
+    $this->assertDatabaseHas('employees', [
+        'email' => 'process-leader@example.com',
+        'campus_id' => $user->campus->id,
+    ]);
 });
 
 test('Employee is created when a user is created', function () {

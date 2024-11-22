@@ -3,7 +3,6 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -20,18 +19,10 @@ class UserCreatedNotification extends Notification implements ShouldQueue
     public string $password;
 
     /**
-     * The authenticated user.
-     *
-     * @var Authenticatable
-     */
-    public Authenticatable $user;
-
-    /**
      * Create a new notification instance.
      */
-    public function __construct($user, $password)
+    public function __construct($password)
     {
-        $this->user = $user;
         $this->password = $password;
     }
 

@@ -10,6 +10,7 @@ use App\Models\Employee;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 use Spatie\QueryBuilder\QueryBuilder;
 
 readonly class EmployeeService
@@ -27,15 +28,28 @@ readonly class EmployeeService
             ->get();
     }
 
+    /**
+     * @throws ValidationException
+     */
     public function createEmployeeFromUser(CreateUserDto $createUserDto): Employee{
 
+        $campus = match (Auth::user()->role) {
+            UserRole::NationalCoordinator => $createUserDto->campus_id,
+            UserRole::CampusCoordinator => Auth::user()->campus_id,
+        };
+
+        if ($campus === null) {
+            throw ValidationException::withMessages([
+                'campus_id' => [__('required')],
+            ]);
+        }
         $avatarUrl = $this->fileService->storeAvatar($createUserDto->avatar);
 
         return Employee::query()->create([
             'name' => $createUserDto->name,
             'avatar' => $avatarUrl,
             'email' => $createUserDto->email,
-            'campus_id' => $createUserDto->campus_id,
+            'campus_id' => $campus,
         ]);
     }
 

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Campus;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\App;
@@ -24,6 +25,10 @@ class DatabaseSeeder extends Seeder
                 'email' => 'estebana.murciaa@gmail.com',
                 'password' => bcrypt('password'),
                 'role' => 'national_coordinator',
+            ]);
+            Campus::factory()->create([
+                'name' => 'Campus 1',
+                'address' => 'Calle 1 # 1-1'
             ]);
         }
     }

@@ -6,9 +6,9 @@ use App\DTOs\Auth\CreateUserDto;
 use App\DTOs\Auth\ForgotPasswordDto;
 use App\DTOs\Auth\ResetPasswordDto;
 use App\DTOs\Auth\UserRole;
-use App\Events\UserCreated;
 use App\Models\Employee;
 use App\Models\User;
+use App\Notifications\UserCreatedNotification;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -41,7 +41,7 @@ readonly class UserService
 
         $campus = match (Auth::user()->role){
             UserRole::NationalCoordinator => $createUserDto->campus_id,
-            UserRole::CampusCoordinator => Auth::user()->campus->id,
+            UserRole::CampusCoordinator => Auth::user()->campus_id,
         };
 
         if($campus === null){
@@ -63,8 +63,7 @@ readonly class UserService
             'employee_id' => $employee?->id,
         ]);
 
-        event(new UserCreated($user, $password));
-
+        $user->notify(new UserCreatedNotification($password));
         return $user;
     }
 
