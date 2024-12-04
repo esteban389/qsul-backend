@@ -1,0 +1,61 @@
+services:
+    # Web Server (HTTP)
+    web:
+        image: ghcr.io/serversideup/php:8.3-fpm-nginx
+        ports:
+            - "8080:8080"
+        working_dir: /var/www/html
+        environment:
+            - PHP_OPCACHE_ENABLE=1
+        volumes:
+            - .:/var/www/html
+        depends_on:
+            - mysql
+            - redis
+        networks:
+            - laravel-network
+        restart: unless-stopped
+
+    # Queue Worker
+    worker:
+        image: ghcr.io/serversideup/php:8.3-cli
+        environment:
+            - PHP_OPCACHE_ENABLE=1
+        working_dir: /var/www/html
+        volumes:
+            - .:/var/www/html
+        command: php artisan queue:work
+        depends_on:
+            - mysql
+            - redis
+        networks:
+            - laravel-network
+        restart: unless-stopped
+
+    # MySQL Database
+    mysql:
+        image: mysql:8.0
+        expose:
+            - "3306"
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_DATABASE: csul_backend
+            MYSQL_USER: csul_backend
+            MYSQL_PASSWORD: laravel
+        restart: unless-stopped
+        networks:
+            - laravel-network
+
+    # Redis
+    redis:
+        image: redis:alpine
+        expose:
+            - "6379"
+        restart: unless-stopped
+        networks:
+            - laravel-network
+
+# Define the custom network
+networks:
+    laravel-network:
+        driver: bridge
