@@ -61,7 +61,7 @@ class User extends Authenticatable
 
     public function campus(): BelongsTo
     {
-        return $this->belongsTo(Campus::class);
+        return $this->belongsTo(Campus::class)->withTrashed();
     }
 
     public function hasRole(UserRole $role): bool

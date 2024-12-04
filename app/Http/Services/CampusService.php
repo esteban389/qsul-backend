@@ -2,9 +2,13 @@
 
 namespace App\Http\Services;
 
+use App\DTOs\Auth\UserRole;
 use App\DTOs\University\CreateCampusRequestDto;
+use App\DTOs\University\UpdateCampusRequestDto;
 use App\Models\Campus;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Auth;
+use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
 readonly class CampusService
@@ -16,6 +20,21 @@ readonly class CampusService
     {}
     public function getCampuses(): Collection
     {
+        if (Auth::check() && Auth::user()->hasRole(UserRole::NationalCoordinator)) {
+            $query = Campus::withTrashed();
+            return QueryBuilder::for($query)
+                ->allowedFilters(['name',
+                    AllowedFilter::callback('deleted_at', function ($query, $value) {
+                        if ($value === 'null') {
+                            $query->whereNull('deleted_at');
+                        } elseif ($value === 'not_null') {
+                            $query->whereNotNull('deleted_at');
+                        }
+                    }),
+                ])
+                ->allowedSorts('name')
+                ->get();
+        }
         return QueryBuilder::for(Campus::class)
             ->allowedFilters('name')
             ->allowedSorts('name')
@@ -32,7 +51,7 @@ readonly class CampusService
         ]);
     }
 
-    public function updateCampus(Campus $campus, CreateCampusRequestDto $requestDto): void
+    public function updateCampus(Campus $campus, UpdateCampusRequestDto $requestDto): void
     {
         if($requestDto->icon){
         $this->fileService->deleteIcon($campus->icon);

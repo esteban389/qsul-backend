@@ -39,8 +39,8 @@ class ProcessPolicy
             return Response::deny();
         }
 
-        if($process->services()->exists()){
-            return Response::denyWithStatus(SymphonyResponse::HTTP_UNPROCESSABLE_ENTITY,Lang::get('Cannot delete a process with services'));
+        if($process->services()->exists() || $process->subprocesses()->exists()) {
+            return Response::denyWithStatus(SymphonyResponse::HTTP_UNPROCESSABLE_ENTITY,Lang::get('Cannot delete a process with services or subprocess'));
         }
 
         return Response::allow();

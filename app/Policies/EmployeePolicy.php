@@ -44,10 +44,15 @@ class EmployeePolicy
 
     public function delete(User $user, Employee $employee): Response
     {
-        return ($user->hasRole(UserRole::CampusCoordinator) && ($employee->campus_id === $user->campus_id))
-        || ($user->hasRole(UserRole::ProcessLeader) && ($employee->process_id === $user->employee()->first()->process_id) && ($employee->campus_id === $user->campus_id))
-            ? Response::allow()
-            : Response::deny();
+       if ($user->hasRole(UserRole::CampusCoordinator) && ($employee->campus_id !== $user->campus_id)) {
+            return Response::deny();
+        }
+
+        if ($user->hasRole(UserRole::ProcessLeader) && ($employee->process_id !== $user->employee()->first()->process_id || $employee->campus_id !== $user->campus_id)) {
+            return Response::deny();
+        }
+
+        return Response::allow();
     }
 
     public function restore(User $user, Employee $employee): Response

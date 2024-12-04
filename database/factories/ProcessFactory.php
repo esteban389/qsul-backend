@@ -22,4 +22,11 @@ class ProcessFactory extends Factory
             'icon' => $this->faker->md5(),
         ];
     }
+
+    public function withParentProcess(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'parent_id' => Process::query()->inRandomOrder()->value('id'),
+        ]);
+    }
 }

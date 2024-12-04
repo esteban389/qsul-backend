@@ -3,6 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\Campus;
+use App\Models\Process;
+use App\Models\Service;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\App;
@@ -27,9 +29,17 @@ class DatabaseSeeder extends Seeder
                 'role' => 'national_coordinator',
             ]);
             Campus::factory()->create([
-                'name' => 'Campus 1',
+                'id' => 1,
+                'name' => 'Bogotá',
+                'address' => 'Carrera 1 # 1-1'
+            ]);
+             Campus::factory()->create([
+                'id' => 2,
+                'name' => 'Cúcuta',
                 'address' => 'Calle 1 # 1-1'
             ]);
+             Process::factory()->count(6)->create();
+             Service::factory()->count(6)->create();
         }
     }
 }

@@ -6,6 +6,7 @@ use App\DTOs\University\CreateCampusRequestDto;
 use App\DTOs\University\CreateEmployeeRequestDto;
 use App\DTOs\University\CreateProcessRequestDto;
 use App\DTOs\University\CreateServiceRequestDto;
+use App\DTOs\University\UpdateCampusRequestDto;
 use App\DTOs\University\UpdateEmployeeRequestDto;
 use App\DTOs\University\UpdateProcessRequestDto;
 use App\DTOs\University\UpdateServiceRequestDto;
@@ -28,7 +29,9 @@ use App\Models\Employee;
 use App\Models\Process;
 use App\Models\Service;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 
@@ -68,7 +71,7 @@ class UniversityController extends Controller
 
     public function updateCampus(Campus $campus, UpdateCampusRequest $request): Response
     {
-        $requestDto = CreateCampusRequestDto::fromRequest($request);
+        $requestDto = UpdateCampusRequestDto::fromRequest($request);
         DB::transaction(function () use ($campus, $requestDto) {
             $this->campusService->updateCampus($campus, $requestDto);
         });
@@ -104,6 +107,7 @@ class UniversityController extends Controller
 
     public function getProcessById(Process $process): JsonResponse
     {
+        $process->load('parent', 'subProcesses','services');
         return response()->json($process);
     }
 
@@ -201,6 +205,9 @@ class UniversityController extends Controller
     public function getEmployeeById(Employee $employee): JsonResponse
     {
         $employee->load('campus', 'process');
+        if (Auth::check()) {
+            $employee->load('user');
+        }
         $employee->url = $employee->campus->token . "/" . $employee->process->token . "/" . $employee->token;
         return response()->json($employee);
     }

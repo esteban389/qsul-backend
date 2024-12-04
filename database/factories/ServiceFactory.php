@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Process;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -20,5 +21,12 @@ class ServiceFactory extends Factory
             'name' => $this->faker->name,
             'icon' => $this->faker->md5(),
         ];
+    }
+
+    public function withProcess(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'process_id' => Process::query()->inRandomOrder()->value('id'),
+        ]);
     }
 }

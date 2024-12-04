@@ -15,7 +15,7 @@ readonly class UpdateProcessRequestDto implements DataTransferObject
     {
     }
 
-    public static function fromRequest($request): DataTransferObject
+    public static function fromRequest($request): self
     {
         return new self(
             name: $request->validated('name'),

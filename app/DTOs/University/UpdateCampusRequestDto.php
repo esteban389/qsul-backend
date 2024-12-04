@@ -9,9 +9,9 @@ readonly class UpdateCampusRequestDto implements DataTransferObject
 {
 
     public function __construct(
-        public string $name,
-        public string $address,
-        public UploadedFile $icon,
+        public ?string $name = null,
+        public ?string $address = null,
+        public ?UploadedFile $icon = null,
     ){}
     public static function fromRequest($request): UpdateCampusRequestDto
     {

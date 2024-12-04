@@ -6,6 +6,8 @@ use App\DTOs\University\CreateProcessRequestDto;
 use App\DTOs\University\UpdateProcessRequestDto;
 use App\Models\Process;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Auth;
+use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
 readonly class ProcessService
@@ -19,9 +21,34 @@ readonly class ProcessService
 
     public function getProcesses(): Collection
     {
+        if(Auth::check()){
+            $query = Process::withTrashed();
+            return QueryBuilder::for($query)
+                ->allowedFilters(['name',
+                    AllowedFilter::callback('deleted_at', function ($query, $value) {
+                        if ($value === 'null') {
+                            $query->whereNull('deleted_at');
+                        } elseif ($value === 'not_null') {
+                            $query->whereNotNull('deleted_at');
+                        }
+                    }),
+                ])
+                ->allowedSorts(['name'])
+                ->get();
+        }
+
         return QueryBuilder::for(Process::class)
-            ->allowedFilters(['name'])
+            ->allowedFilters(['name',
+                AllowedFilter::callback('deleted_at', function ($query, $value) {
+                        if ($value === 'null') {
+                            $query->whereNull('deleted_at');
+                        } elseif ($value === 'not_null') {
+                            $query->whereNotNull('deleted_at');
+                        }
+                    }),
+                ])
             ->allowedSorts(['name'])
+            ->allowedIncludes(['parent','subProcesses'])
             ->get();
     }
 
@@ -44,8 +71,8 @@ readonly class ProcessService
         $data = array_filter([
             'name' => $requestDto->name,
             'icon' => $iconPath ?? null,
-            'parent_id' => $requestDto->parent_id,
         ], fn($value) => $value !== null);
+        $data['parent_id'] = $requestDto->parent_id;
         $process->update($data);
     }
 

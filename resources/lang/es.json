@@ -91,5 +91,5 @@
     "Password: :password": "Tu contraseña es: :password",
     "Account created": "Cuenta creada",
     "Cannot delete campus with associated users or employees": "No se puede eliminar un campus con usuarios o empleados asociados",
-    "Cannot delete a process with services": "No se puede eliminar un proceso con servicios asociados"
+    "Cannot delete a process with services or subprocess": "No se puede eliminar un proceso con servicios o subprocesos asociados"
 }

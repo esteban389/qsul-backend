@@ -20,6 +20,7 @@ readonly class ServiceService
     {
         return QueryBuilder::for(Service::class)
             ->allowedFilters(['name'])
+            ->allowedIncludes(['process'])
             ->allowedSorts(['name'])
             ->get();
     }
