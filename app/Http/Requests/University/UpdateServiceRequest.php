@@ -28,6 +28,7 @@ class UpdateServiceRequest extends FormRequest
         return [
             'name' => ['string'],
             'icon' => ['image','max:2048'],
+            'process_id' => ['nullable','exists:processes,id'],
         ];
     }
 }

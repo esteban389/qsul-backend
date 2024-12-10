@@ -80,7 +80,7 @@ test('National coordinator can update a campus', function () {
     $icon = UploadedFile::fake()->image('icon.png');
     $campus = Campus::factory()->create();
 
-    $response = $this->put("/api/campuses/{$campus->token}", [
+    $response = $this->post("/api/campuses/{$campus->id}", [
         'name' => 'Campus Name',
         'address' => 'Campus Location',
         'icon' => $icon,
@@ -102,7 +102,7 @@ test('Old campus icon is deleted when updating a campus\'s icon', function () {
     $oldIcon = UploadedFile::fake()->image('old_icon.png');
     $campus = Campus::factory()->create(['icon' => $oldIcon->hashName()]);
 
-    $response = $this->put("/api/campuses/{$campus->token}", [
+    $response = $this->post("/api/campuses/{$campus->id}", [
         'name' => 'Campus Name',
         'address' => 'Campus Location',
         'icon' => $icon,
@@ -125,7 +125,7 @@ test('No one else can update a campus', function () {
     $icon = UploadedFile::fake()->image('icon.png');
     $campus = Campus::factory()->create();
 
-    $response = $this->put("/api/campuses/{$campus->token}", [
+    $response = $this->post("/api/campuses/{$campus->id}", [
         'name' => 'Campus Name',
         'address' => 'Campus Location',
         'icon' => $icon,
@@ -139,7 +139,7 @@ test('Unauthorized user cannot update a campus', function () {
     $icon = UploadedFile::fake()->image('icon.png');
     $campus = Campus::factory()->create();
 
-    $response = $this->put("/api/campuses/{$campus->token}", [
+    $response = $this->post("/api/campuses/{$campus->token}", [
         'name' => 'Campus Name',
         'address' => 'Campus Location',
         'icon' => $icon,
@@ -153,7 +153,7 @@ test('National coordinator can delete a campus', function () {
     $this->actingAs($campusCoordinator);
     $campus = Campus::factory()->create();
 
-    $response = $this->delete("/api/campuses/{$campus->token}");
+    $response = $this->delete("/api/campuses/{$campus->id}");
 
     $response->assertStatus(Response::HTTP_NO_CONTENT);
     $this->assertSoftDeleted($campus);
@@ -166,7 +166,7 @@ test('Campus with associated user or employee cannot be deleted', function (){
     $user = User::factory()->create(['campus_id' => $campus->id]);
     $employee = User::factory()->create(['campus_id' => $campus->id]);
 
-    $response = $this->delete("/api/campuses/{$campus->token}");
+    $response = $this->delete("/api/campuses/{$campus->id}");
 
     $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
     $this->assertNotSoftDeleted($campus);
@@ -177,7 +177,7 @@ test('No one else can delete a campus', function () {
     $this->actingAs($campusCoordinator);
     $campus = Campus::factory()->create();
 
-    $response = $this->delete("/api/campuses/{$campus->token}");
+    $response = $this->delete("/api/campuses/{$campus->id}");
 
     $response->assertStatus(Response::HTTP_FORBIDDEN);
     $this->assertNotSoftDeleted($campus);
@@ -186,7 +186,7 @@ test('No one else can delete a campus', function () {
 test('Unauthorized user cannot delete a campus', function () {
     $campus = Campus::factory()->create();
 
-    $response = $this->delete("/api/campuses/{$campus->token}");
+    $response = $this->delete("/api/campuses/{$campus->id}");
 
     $response->assertStatus(Response::HTTP_FOUND);
     $this->assertNotSoftDeleted($campus);
@@ -198,7 +198,7 @@ test('National coordinator can restore a campus', function () {
     $campus = Campus::factory()->create();
     $campus->delete();
 
-    $response = $this->patch("/api/campuses/{$campus->token}");
+    $response = $this->patch("/api/campuses/{$campus->id}");
 
     $response->assertStatus(Response::HTTP_NO_CONTENT);
     $this->assertNotSoftDeleted($campus);
@@ -210,7 +210,7 @@ test('No one else can restore a campus', function () {
     $campus = Campus::factory()->create();
     $campus->delete();
 
-    $response = $this->patch("/api/campuses/{$campus->token}");
+    $response = $this->patch("/api/campuses/{$campus->id}");
 
     $response->assertStatus(Response::HTTP_FORBIDDEN);
     $this->assertSoftDeleted($campus);

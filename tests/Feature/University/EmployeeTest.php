@@ -153,7 +153,7 @@ test('Campus coordinator can assign a service to an employee inside their campus
         'process_id' => $this->process->id
     ]);
 
-    $response = $this->actingAs($user)->post('/api/employees/' . $this->employee[0]->token . '/services', [
+    $response = $this->actingAs($user)->post('/api/employees/' . $this->employee[0]->id . '/services', [
         'service_id' => $service->id
     ]);
 
@@ -175,7 +175,7 @@ test('Campus coordinator can\'t assign a service to an employee outside their ca
 
     $this->employee[1]->update(['campus_id' => $this->campus2->id]);
 
-    $response = $this->actingAs($user)->post('/api/employees/' . $this->employee[1]->token . '/services', [
+    $response = $this->actingAs($user)->post('/api/employees/' . $this->employee[1]->id . '/services', [
         'service_id' => $service->id
     ]);
 
@@ -196,7 +196,7 @@ test('Process leader can assign a service to an employee inside their process', 
         'process_id' => $this->process->id
     ]);
 
-    $response = $this->actingAs($user)->post('/api/employees/' . $this->employee[1]->token . '/services', [
+    $response = $this->actingAs($user)->post('/api/employees/' . $this->employee[1]->id . '/services', [
         'service_id' => $service->id
     ]);
 
@@ -217,7 +217,7 @@ test('Process leader can\'t assign a service from a different process to an empl
         'process_id' => $this->process2->id
     ]);
 
-    $response = $this->actingAs($user)->post('/api/employees/' . $this->employee[0]->token . '/services', [
+    $response = $this->actingAs($user)->post('/api/employees/' . $this->employee[0]->id . '/services', [
         'service_id' => $service->id
     ]);
 
@@ -240,7 +240,7 @@ test('Process leader can\'t assign a service to an employee outside their proces
 
     $this->employee[1]->update(['process_id' => $this->process2->id]);
 
-    $response = $this->actingAs($user)->post('/api/employees/' . $this->employee[1]->token . '/services', [
+    $response = $this->actingAs($user)->post('/api/employees/' . $this->employee[1]->id . '/services', [
         'service_id' => $service->id
     ]);
 
@@ -259,7 +259,7 @@ test('Campus coordinator can update an employee inside their campus', function (
     ]);
     $employeeImage = UploadedFile::fake()->image('updated-employee.jpg');
 
-    $response = $this->actingAs($user)->put('/api/employees/' . $this->employee[0]->token, [
+    $response = $this->actingAs($user)->post('/api/employees/' . $this->employee[0]->id, [
         'name' => 'Employee Name Updated',
         'email' => 'updated-employee@example.com',
         'avatar' => $employeeImage,
@@ -282,7 +282,7 @@ test('Campus coordinator can update an employee\'s process', function () {
         'campus_id' => $this->campus->id
     ]);
 
-    $response = $this->actingAs($user)->put('/api/employees/' . $this->employee[0]->token, [
+    $response = $this->actingAs($user)->post('/api/employees/' . $this->employee[0]->id, [
         'process_id' => $this->process2->id
     ]);
 
@@ -300,7 +300,7 @@ test('Process leader cannot update an employee\'s process', function () {
         'employee_id' => $this->employee[0]->id
     ]);
 
-    $response = $this->actingAs($user)->put('/api/employees/' . $this->employee[1]->token, [
+    $response = $this->actingAs($user)->post('/api/employees/' . $this->employee[1]->id, [
         'process_id' => $this->process2->id
     ]);
 
@@ -320,7 +320,7 @@ test('Process leader can update an employee inside their process', function () {
     ]);
     $employeeImage = UploadedFile::fake()->image('updated-employee.jpg');
 
-    $response = $this->actingAs($user)->put('/api/employees/' . $this->employee[1]->token, [
+    $response = $this->actingAs($user)->post('/api/employees/' . $this->employee[1]->id, [
         'name' => 'Employee Name Updated',
         'email' => 'updated-employee@example.com',
         'avatar' => $employeeImage,
@@ -347,7 +347,7 @@ test('Employee with user associated cannot be updated', function () {
     ]);
     $employeeImage = UploadedFile::fake()->image('updated-employee.jpg');
 
-    $response = $this->actingAs($user)->put('/api/employees/' . $this->employee[0]->token, [
+    $response = $this->actingAs($user)->post('/api/employees/' . $this->employee[0]->id, [
         'name' => 'Employee Name Updated',
         'email' => 'updated-employee@example.com',
         'avatar' => $employeeImage,
@@ -373,7 +373,7 @@ test('Campus coordinator can\'t update an employee outside their campus', functi
 
     $this->employee[1]->update(['campus_id' => $this->campus2->id]);
 
-    $response = $this->actingAs($user)->put('/api/employees/' . $this->employee[1]->token, [
+    $response = $this->actingAs($user)->post('/api/employees/' . $this->employee[1]->id, [
         'name' => 'Employee Name Updated',
         'email' => 'updated-employee@example.com',
         'avatar' => $employeeImage,
@@ -400,7 +400,7 @@ test('Process leader can\'t update an employee outside their process', function 
 
     $this->employee[1]->update(['process_id' => $this->process2->id]);
 
-    $response = $this->actingAs($user)->put('/api/employees/' . $this->employee[1]->token, [
+    $response = $this->actingAs($user)->post('/api/employees/' . $this->employee[1]->id, [
         'name' => 'Employee Name Updated',
         'email' => 'updated-employee@example.com',
         'avatar' => $employeeImage,
@@ -426,7 +426,7 @@ test('Process leader can\'t change employee\'s process', function () {
         ]);
         $employeeImage = UploadedFile::fake()->image('updated-employee.jpg');
 
-        $response = $this->actingAs($user)->put('/api/employees/' . $this->employee[0]->token, [
+        $response = $this->actingAs($user)->post('/api/employees/' . $this->employee[0]->id, [
             'name' => 'Employee Name Updated',
             'email' => 'example@example.com',
             'avatar' => $employeeImage,
@@ -450,7 +450,7 @@ test('Campus coordinator can delete an employee inside their campus', function (
         'campus_id' => $this->campus->id
     ]);
 
-    $response = $this->actingAs($user)->delete('/api/employees/' . $this->employee[0]->token);
+    $response = $this->actingAs($user)->delete('/api/employees/' . $this->employee[0]->id);
 
     $response->assertStatus(Response::HTTP_NO_CONTENT);
     $this->assertSoftDeleted($this->employee[0]);
@@ -463,7 +463,7 @@ test('User associated with employee is deleted when employee is deleted', functi
     $authenticatingUser = User::factory()->withRole(UserRole::CampusCoordinator)->create([
         'campus_id' => $this->campus->id
     ]);
-    $this->actingAs($authenticatingUser)->delete('/api/employees/' . $this->employee[0]->token);
+    $this->actingAs($authenticatingUser)->delete('/api/employees/' . $this->employee[0]->id);
 
     $this->assertSoftDeleted($this->employee[0]);
     $this->assertSoftDeleted($user);
@@ -476,7 +476,7 @@ test('Campus coordinator can\'t delete an employee outside their campus', functi
     ]);
 
     $this->employee[1]->update(['campus_id' => $this->campus2->id]);
-    $response = $this->actingAs($user)->delete('/api/employees/' . $this->employee[1]->token);
+    $response = $this->actingAs($user)->delete('/api/employees/' . $this->employee[1]->id);
 
     $response->assertStatus(Response::HTTP_FORBIDDEN);
     $this->assertNotSoftDeleted($this->employee[1]);
@@ -489,7 +489,7 @@ test('Process leader can delete an employee inside their process', function () {
         'employee_id' => $this->employee[0]->id
     ]);
 
-    $response = $this->actingAs($user)->delete('/api/employees/' . $this->employee[0]->token);
+    $response = $this->actingAs($user)->delete('/api/employees/' . $this->employee[0]->id);
 
     $response->assertStatus(Response::HTTP_NO_CONTENT);
     $this->assertSoftDeleted($this->employee[0]);
@@ -503,7 +503,7 @@ test('Process leader can\'t delete an employee outside their process', function 
     ]);
 
     $this->employee[1]->update(['process_id' => $this->process2->id]);
-    $response = $this->actingAs($user)->delete('/api/employees/' . $this->employee[1]->token);
+    $response = $this->actingAs($user)->delete('/api/employees/' . $this->employee[1]->id);
 
     $response->assertStatus(Response::HTTP_FORBIDDEN);
     $this->assertNotSoftDeleted($this->employee[1]);
@@ -517,7 +517,7 @@ test('Campus coordinator can restore an employee inside their campus', function 
 
     $this->employee[0]->delete();
 
-    $response = $this->actingAs($user)->patch('/api/employees/' . $this->employee[0]->token);
+    $response = $this->actingAs($user)->patch('/api/employees/' . $this->employee[0]->id);
 
     $response->assertStatus(Response::HTTP_NO_CONTENT);
     $this->assertNotSoftDeleted($this->employee[0]);
@@ -533,7 +533,7 @@ test('User associated with employee is restored when employee is restored', func
     $user->delete();
     $this->employee[0]->delete();
 
-    $this->actingAs($authenticatingUser)->patch('/api/employees/' . $this->employee[0]->token);
+    $this->actingAs($authenticatingUser)->patch('/api/employees/' . $this->employee[0]->id);
 
     $this->assertNotSoftDeleted($this->employee[0]);
     $this->assertNotSoftDeleted($user);
@@ -548,7 +548,7 @@ test('Campus coordinator can\'t restore an employee outside their campus', funct
     $this->employee[1]->update(['campus_id' => $this->campus2->id]);
     $this->employee[1]->delete();
 
-    $response = $this->actingAs($user)->patch('/api/employees/' . $this->employee[1]->token);
+    $response = $this->actingAs($user)->patch('/api/employees/' . $this->employee[1]->id);
 
     $response->assertStatus(Response::HTTP_FORBIDDEN);
     $this->assertSoftDeleted($this->employee[1]);
@@ -563,7 +563,7 @@ test('Process leader can restore an employee inside their process', function () 
 
     $this->employee[0]->delete();
 
-    $response = $this->actingAs($user)->patch('/api/employees/' . $this->employee[0]->token);
+    $response = $this->actingAs($user)->patch('/api/employees/' . $this->employee[0]->id);
 
     $response->assertStatus(Response::HTTP_NO_CONTENT);
     $this->assertNotSoftDeleted($this->employee[0]);
@@ -579,7 +579,7 @@ test('Process leader can\'t restore an employee outside their process', function
     $this->employee[1]->update(['process_id' => $this->process2->id]);
     $this->employee[1]->delete();
 
-    $response = $this->actingAs($user)->patch('/api/employees/' . $this->employee[1]->token);
+    $response = $this->actingAs($user)->patch('/api/employees/' . $this->employee[1]->id);
 
     $response->assertStatus(Response::HTTP_FORBIDDEN);
     $this->assertSoftDeleted($this->employee[1]);

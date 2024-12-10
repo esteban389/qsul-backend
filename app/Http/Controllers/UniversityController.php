@@ -29,7 +29,6 @@ use App\Models\Employee;
 use App\Models\Process;
 use App\Models\Service;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -243,6 +242,14 @@ class UniversityController extends Controller
             $this->employeeService->addServiceToEmployee($employee, $serviceId);
         });
         return response()->created();
+    }
+
+    public function removeEmployeeService(Employee $employee, Service $service): Response
+    {
+        DB::transaction(function () use ($employee, $service) {
+            $this->employeeService->removeServiceToEmployee($employee, $service);
+        });
+        return response()->noContent();
     }
 
     public function deleteEmployee(Employee $employee): Response

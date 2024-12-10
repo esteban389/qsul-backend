@@ -38,6 +38,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::delete('/employees/{employee}', 'deleteEmployee');
         Route::patch('/employees/{employee}', 'restoreEmployee')->withTrashed();
         Route::post('/employees/{employee}/services', 'addEmployeeService');
+        Route::delete('/employees/{employee}/services/{service}', 'removeEmployeeService');
     });
 });
 

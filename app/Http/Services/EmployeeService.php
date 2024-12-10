@@ -7,6 +7,7 @@ use App\DTOs\Auth\UserRole;
 use App\DTOs\University\CreateEmployeeRequestDto;
 use App\DTOs\University\UpdateEmployeeRequestDto;
 use App\Models\Employee;
+use App\Models\Service;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -22,9 +23,17 @@ readonly class EmployeeService
 
     public function getEmployees(): Collection
     {
-        return QueryBuilder::for(Employee::class)
+        $query = Employee::query();
+        if(Auth::check()){
+            $query = Employee::withTrashed();
+            if(Auth::user()->hasRole(UserRole::CampusCoordinator)){
+                $query = $query->where('campus_id', Auth::user()->campus_id);
+            }
+        }
+        return QueryBuilder::for($query)
             ->allowedFilters(['name', 'email'])
             ->allowedSorts(['name', 'email'])
+            ->allowedIncludes(['services','process'])
             ->get();
     }
 
@@ -115,7 +124,15 @@ readonly class EmployeeService
 
     public function addServiceToEmployee(Employee $employee, mixed $serviceId): void
     {
+        if($employee->services()->where('service_id', $serviceId)->exists()){
+            return;
+        }
         $employee->services()->attach($serviceId);
+    }
+
+    public function removeServiceToEmployee(Employee $employee, Service $service): void
+    {
+        $employee->services()->detach($service);
     }
 
 }
