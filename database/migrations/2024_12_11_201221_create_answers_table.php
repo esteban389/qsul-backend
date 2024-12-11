@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('answers', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('question_id')->constrained();
+            $table->foreignId('survey_id')->constrained();
             $table->foreignId('respondent_type_id')->constrained();
             $table->foreignId('employee_service_id')->constrained('employee_service');
             $table->float('average');
