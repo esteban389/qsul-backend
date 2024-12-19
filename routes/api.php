@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthenticationController;
+use App\Http\Controllers\SurveyController;
 use App\Http\Controllers\UniversityController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -40,6 +41,11 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('/employees/{employee}/services', 'addEmployeeService');
         Route::delete('/employees/{employee}/services/{service}', 'removeEmployeeService');
     });
+
+    Route::controller(SurveyController::class)->group(function (){
+        Route::post('/survey', 'createSurvey');
+        Route::delete('/survey/questions/{question}', 'deleteQuestion');
+    });
 });
 
     Route::get('/campuses', [UniversityController::class,'getCampuses']);
@@ -54,3 +60,5 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('/employees', [UniversityController::class,'getEmployees']);
     Route::get('/employees/{employee:token}', [UniversityController::class,'getEmployeeById']);
     Route::get('/employees/{employee:token}/services', [UniversityController::class,'getEmployeeServices']);
+
+    Route::get('survey', [SurveyController::class,'getCurrentSurvey']);

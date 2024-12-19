@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\DTOs\Auth\QuestionType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -20,5 +21,22 @@ class Question extends Model
     public function survey()
     {
         return $this->belongsTo(Survey::class);
+    }
+
+    public function service()
+    {
+        return $this->belongsTo(Service::class);
+    }
+
+    public function answers()
+    {
+        return $this->hasMany(Answer::class);
+    }
+
+    public function casts()
+    {
+        return [
+            'type' => QuestionType::class,
+        ];
     }
 }

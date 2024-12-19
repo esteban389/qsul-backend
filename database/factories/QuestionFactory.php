@@ -19,7 +19,7 @@ class QuestionFactory extends Factory
         return [
             'text' => $this->faker->sentence,
             'type' => $this->faker->randomElement(['radio', 'yesno']),
-            'order' => $this->faker->word,
+            'order' => 'B'.$this->faker->numberBetween(10, 100),
         ];
     }
 }

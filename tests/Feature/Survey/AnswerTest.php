@@ -258,3 +258,38 @@ test('National coordinator can ignore a result', function (){
         'user_id' => $user->id,
     ]);
 });
+
+test('Anyone can answer the survey', function (){
+    $response = $this->post('/api/answers', [
+        'version' => $this->survey->version,
+        'respondent_type_id' => $this->respondentType->id,
+        'email' => 'email@mail.com',
+        'answers' => [
+            [
+                'question_id' => $this->question->id,
+                'answer' => 'Answer 1',
+            ],
+            [
+                'question_id' => $this->question2->id,
+                'answer' => 'Answer 2',
+            ],
+        ],
+    ]);
+
+    $response->assertStatus(Response::HTTP_CREATED);
+    $this->assertDatabaseHas('answers', [
+        'version' => $this->survey->id,
+        'respondent_type_id' => $this->respondentType->id,
+        'email' => 'email@mail.com',
+    ]);
+
+    $this->assertDatabaseHas('answer_questions', [
+        'question_id' => $this->question->id,
+        'answer' => 'Answer 1',
+    ]);
+
+    $this->assertDatabaseHas('answer_questions', [
+        'question_id' => $this->question2->id,
+        'answer' => 'Answer 2',
+    ]);
+});
