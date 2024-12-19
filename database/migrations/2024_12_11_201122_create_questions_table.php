@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string("text");
             $table->enum("type",['radio','yesno']);
-            $table->foreignId('service_id')->constrained();
+            $table->foreignId('service_id')->nullable()->constrained();
             $table->foreignId('survey_id')->constrained();
             $table->string('order');
             $table->softDeletes();
