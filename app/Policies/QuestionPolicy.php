@@ -32,4 +32,17 @@ class QuestionPolicy
 
         return true;
     }
+
+    public function update(User $user, Question $question): bool
+    {
+        if(!$user->hasRole(UserRole::NationalCoordinator)){
+            return false;
+        }
+
+        if(!$question->service()->exists()){
+            return false;
+        }
+
+        return true;
+    }
 }

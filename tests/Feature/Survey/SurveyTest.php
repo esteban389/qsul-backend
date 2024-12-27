@@ -26,12 +26,12 @@ test('Anyone can get current survey', function () {
         'questions' => [
             [
                 'text' => $this->question->text,
-                'type' => $this->question->type,
+                'type' => $this->question->type->value,
                 'order' => $this->question->order,
             ],
             [
                 'text' => $this->question2->text,
-                'type' => $this->question2->type,
+                'type' => $this->question2->type->value,
                 'order' => $this->question2->order,
             ],
         ]
@@ -132,7 +132,7 @@ test('Service based questions can be updated', function () {
     ];
     $response = $this->post('/api/survey/questions/' . $this->question->id, $question);
 
-    $response->assertStatus(Response::HTTP_OK);
+    $response->assertStatus(Response::HTTP_NO_CONTENT);
     $this->assertDatabaseHas('questions', $question);
 });
 
@@ -156,9 +156,8 @@ test('National coordinator can create service based questions', function () {
         'text' => 'What is your name?',
         'type' => 'radio',
         'order' => '1',
-        'service_id' => $this->service->id,
     ];
-    $response = $this->post('/api/survey/questions/service', $question);
+    $response = $this->post('/api/survey/questions/service/'.$this->service->id, $question);
 
     $response->assertStatus(Response::HTTP_CREATED);
     $this->assertDatabaseHas('questions', $question);
@@ -176,12 +175,12 @@ test('National coordinator can get all survey versions', function () {
             'questions' => [
                 [
                     'text' => $this->question->text,
-                    'type' => $this->question->type,
+                    'type' => $this->question->type->value,
                     'order' => $this->question->order,
                 ],
                 [
                     'text' => $this->question2->text,
-                    'type' => $this->question2->type,
+                    'type' => $this->question2->type->value,
                     'order' => $this->question2->order,
                 ],
             ]
@@ -200,12 +199,12 @@ test('National coordinator can get a survey version by version number', function
         'questions' => [
             [
                 'text' => $this->question->text,
-                'type' => $this->question->type,
+                'type' => $this->question->type->value,
                 'order' => $this->question->order,
             ],
             [
                 'text' => $this->question2->text,
-                'type' => $this->question2->type,
+                'type' => $this->question2->type->value,
                 'order' => $this->question2->order,
             ],
         ]

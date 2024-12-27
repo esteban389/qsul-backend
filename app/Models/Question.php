@@ -5,6 +5,8 @@ namespace App\Models;
 use App\DTOs\Auth\QuestionType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Question extends Model
@@ -18,22 +20,22 @@ class Question extends Model
         'order',
     ];
 
-    public function survey()
+    public function survey(): BelongsTo
     {
         return $this->belongsTo(Survey::class);
     }
 
-    public function service()
+    public function service(): BelongsTo
     {
         return $this->belongsTo(Service::class);
     }
 
-    public function answers()
+    public function answers(): HasMany
     {
         return $this->hasMany(Answer::class);
     }
 
-    public function casts()
+    public function casts(): array
     {
         return [
             'type' => QuestionType::class,

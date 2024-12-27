@@ -2,9 +2,12 @@
 
 namespace App\Http\Services;
 
+use App\DTOs\Survey\CreateServiceQuestionRequestDto;
 use App\DTOs\Survey\CreateSurveyRequestDto;
 use App\DTOs\Survey\QuestionsDto;
+use App\DTOs\Survey\UpdateQuestionRequestDto;
 use App\Models\Question;
+use App\Models\Service;
 use App\Models\Survey;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -29,5 +32,17 @@ readonly class QuestionService
     public function deleteQuestion(Question $question): void
     {
         $question->delete();
+    }
+
+    public function updateQuestion(Question $question, UpdateQuestionRequestDto $requestDto): void
+    {
+        $data = array_filter($requestDto->toArray(), fn($value) => $value !== null);
+        $question->update($data);
+    }
+
+    public function createServiceQuestion(Service $service, CreateServiceQuestionRequestDto $requestDto, Survey $survey): void
+    {
+        $data = array_merge($requestDto->toArray(), ['survey_id' => $survey->id]);
+        $service->questions()->create($data);
     }
 }
