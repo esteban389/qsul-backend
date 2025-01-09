@@ -11,14 +11,14 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         return $request->user();
     });
 
-    Route::controller(AuthenticationController::class)->group(function (){
+    Route::controller(AuthenticationController::class)->group(function () {
         Route::get('/users', 'getUsers');
         Route::get('/users/{user}', 'getUserById');
         Route::delete('/users/{user}', 'deleteUser');
         Route::patch('/users/{user}', 'restoreUser')->withTrashed();
     });
 
-    Route::controller(UniversityController::class)->group(function (){
+    Route::controller(UniversityController::class)->group(function () {
         Route::post('/campuses', 'createCampus');
         Route::post('/campuses/{campus}', 'updateCampus')->withTrashed();
         Route::delete('/campuses/{campus}', 'deleteCampus');
@@ -42,27 +42,37 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::delete('/employees/{employee}/services/{service}', 'removeEmployeeService');
     });
 
-    Route::controller(SurveyController::class)->group(function (){
+    Route::controller(SurveyController::class)->group(function () {
         Route::post('/survey', 'createSurvey');
         Route::delete('/survey/questions/{question}', 'deleteQuestion');
         Route::post('/survey/questions/{question}', 'updateQuestion');
         Route::post('/survey/questions/service/{service}', 'createServiceQuestion');
         Route::get('/survey/versions', 'getSurveys');
         Route::get('/survey/versions/{survey:version}', 'getSurveyById');
+
+        Route::get('/answers', 'getAnswers');
+        Route::post('/answers/{answer}/observation', 'addObservation');
+        Route::post('/answers/{answer}/ignore', 'ignoreAnswer');
+
+        Route::post('/respondent-types', 'createRespondentType');
+        Route::delete('/respondent-types/{respondentType}', 'deleteRespondentType');
     });
 });
 
-    Route::get('/campuses', [UniversityController::class,'getCampuses']);
-    Route::get('/campuses/{campus:token}', [UniversityController::class,'getCampusById']);
+Route::get('/campuses', [UniversityController::class, 'getCampuses']);
+Route::get('/campuses/{campus:token}', [UniversityController::class, 'getCampusById']);
 
-    Route::get('/processes', [UniversityController::class,'getProcesses']);
-    Route::get('/processes/{process:token}', [UniversityController::class,'getProcessById']);
+Route::get('/processes', [UniversityController::class, 'getProcesses']);
+Route::get('/processes/{process:token}', [UniversityController::class, 'getProcessById']);
 
-    Route::get('/services', [UniversityController::class,'getServices']);
-    Route::get('/services/{service:token}', [UniversityController::class,'getServiceById']);
+Route::get('/services', [UniversityController::class, 'getServices']);
+Route::get('/services/{service:token}', [UniversityController::class, 'getServiceById']);
 
-    Route::get('/employees', [UniversityController::class,'getEmployees']);
-    Route::get('/employees/{employee:token}', [UniversityController::class,'getEmployeeById']);
-    Route::get('/employees/{employee:token}/services', [UniversityController::class,'getEmployeeServices']);
+Route::get('/employees', [UniversityController::class, 'getEmployees']);
+Route::get('/employees/{employee:token}', [UniversityController::class, 'getEmployeeById']);
+Route::get('/employees/{employee:token}/services', [UniversityController::class, 'getEmployeeServices']);
 
-    Route::get('survey', [SurveyController::class,'getCurrentSurvey']);
+Route::get('survey', [SurveyController::class, 'getCurrentSurvey']);
+Route::post('/answers', [SurveyController::class,'createAnswer']);
+
+Route::get('/respondent-types', [SurveyController::class, 'getRespondentTypes']);

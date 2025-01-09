@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\DTOs\Auth\QuestionType;
+use App\DTOs\Survey\QuestionType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

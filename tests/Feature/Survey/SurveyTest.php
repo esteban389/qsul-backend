@@ -52,6 +52,7 @@ test('National coordinator can create a new version of the survey', function () 
 
     $response->assertStatus(Response::HTTP_CREATED);
     $this->assertDatabaseHas('surveys', ['version' => $this->survey->version + 1]);
+    $question['order'] = 'B'.$question['order'];
     $this->assertDatabaseHas('questions', $question);
 });
 

@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\Survey;
 
-use App\DTOs\Auth\QuestionType;
+use App\DTOs\Survey\QuestionType;
 use App\Models\Survey;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Contracts\Validation\ValidationRule;

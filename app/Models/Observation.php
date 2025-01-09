@@ -2,9 +2,33 @@
 
 namespace App\Models;
 
+use App\DTOs\Survey\ObservationType;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Observation extends Model
 {
-    //
+    use HasFactory, SoftDeletes;
+
+    protected $fillable = [
+        'type',
+        'description',
+        'answer_id',
+        'user_id'
+    ];
+
+    public function answer()
+    {
+        return $this->belongsTo(Answer::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    protected $casts = [
+        'type' => ObservationType::class,
+    ];
 }

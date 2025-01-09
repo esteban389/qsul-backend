@@ -33,4 +33,14 @@ class Answer extends Model
     {
         return $this->belongsTo(RespondentType::class);
     }
+
+    public function answerQuestions()
+    {
+        return $this->hasMany(AnswerQuestion::class);
+    }
+
+    public function observations()
+    {
+        return $this->hasMany(Observation::class);
+    }
 }
