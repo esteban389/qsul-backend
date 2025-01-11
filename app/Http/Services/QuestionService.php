@@ -18,10 +18,10 @@ readonly class QuestionService
     {
         $questions = array_map(function (QuestionsDto $question) {
             $question = $question->toArray();
-            $question['order'] = $question['service_id'] === null ? 'B'.$question['order'] : 'A'. $question['order'];
+            $question['order'] = $question['service_id'] === null ? 'B' . $question['order'] : 'A' . $question['order'];
             return $question;
         }, $requestDto->questions);
-        if($requestDto->keep_service_questions) {
+        if ($requestDto->keep_service_questions) {
             $previousSurvey = Survey::query()->where('version', $survey->version - 1)->first();
             $serviceQuestions = $previousSurvey->questions()->where('service_id', '!=', null)->get();
             $questions = array_merge($questions, $serviceQuestions->toArray());
@@ -42,7 +42,8 @@ readonly class QuestionService
 
     public function createServiceQuestion(Service $service, CreateServiceQuestionRequestDto $requestDto, Survey $survey): void
     {
-        $data = array_merge($requestDto->toArray(), ['survey_id' => $survey->id]);
+        $order = 'A' . $service->questions()->count() + 1;
+        $data = array_merge($requestDto->toArray(), ['order' => $order], ['survey_id' => $survey->id]);
         $service->questions()->create($data);
     }
 }

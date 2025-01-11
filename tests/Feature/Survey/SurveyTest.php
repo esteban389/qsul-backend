@@ -52,7 +52,7 @@ test('National coordinator can create a new version of the survey', function () 
 
     $response->assertStatus(Response::HTTP_CREATED);
     $this->assertDatabaseHas('surveys', ['version' => $this->survey->version + 1]);
-    $question['order'] = 'B'.$question['order'];
+    $question['order'] = 'B' . $question['order'];
     $this->assertDatabaseHas('questions', $question);
 });
 
@@ -71,7 +71,7 @@ test('Non national coordinator cannot create a new version of the survey', funct
     $response->assertStatus(Response::HTTP_FORBIDDEN);
 });
 
-test('Service based questions can be keep', function () {
+test('Service based questions can be kept', function () {
     $user = User::factory()->withRole(UserRole::NationalCoordinator)->create();
     $this->actingAs($user);
     $question = [
@@ -99,7 +99,7 @@ test('Service based questions can be keep', function () {
     $response->assertJsonFragment([
         'text' => $question['text'],
         'type' => $question['type'],
-        'order' => 'B'.$question['order'],
+        'order' => 'B' . $question['order'],
     ]);
 });
 
@@ -158,7 +158,7 @@ test('National coordinator can create service based questions', function () {
         'type' => 'radio',
         'order' => '1',
     ];
-    $response = $this->post('/api/survey/questions/service/'.$this->service->id, $question);
+    $response = $this->post('/api/survey/questions/services/' . $this->service->id, $question);
 
     $response->assertStatus(Response::HTTP_CREATED);
     $this->assertDatabaseHas('questions', $question);
@@ -189,10 +189,10 @@ test('National coordinator can get all survey versions', function () {
     ]);
 });
 
-test('National coordinator can get a survey version by version number', function () {
+test('National coordinator can get a survey version by version id', function () {
     $user = User::factory()->withRole(UserRole::NationalCoordinator)->create();
     $this->actingAs($user);
-    $response = $this->get('/api/survey/versions/' . $this->survey->version);
+    $response = $this->get('/api/survey/versions/' . $this->survey->id);
 
     $response->assertStatus(Response::HTTP_OK);
     $response->assertJson([

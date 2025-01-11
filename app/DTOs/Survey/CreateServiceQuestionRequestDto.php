@@ -10,7 +10,6 @@ readonly class CreateServiceQuestionRequestDto implements DataTransferObject
     public function __construct(
         public string $text,
         public string $type,
-        public string $order,
     )
     {
     }
@@ -20,7 +19,6 @@ readonly class CreateServiceQuestionRequestDto implements DataTransferObject
         return new self(
             $request->validated(['text']),
             $request->validated(['type']),
-            $request->validated(['order']),
         );
     }
 
@@ -29,7 +27,6 @@ readonly class CreateServiceQuestionRequestDto implements DataTransferObject
         return [
             'text' => $this->text,
             'type' => $this->type,
-            'order' => $this->order,
         ];
     }
 }

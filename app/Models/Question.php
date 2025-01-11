@@ -41,4 +41,11 @@ class Question extends Model
             'type' => QuestionType::class,
         ];
     }
+
+    protected static function booted()
+    {
+        static::addGlobalScope('order', function ($builder) {
+            $builder->orderBy('order');
+        });
+    }
 }

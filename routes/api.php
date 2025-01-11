@@ -46,9 +46,9 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('/survey', 'createSurvey');
         Route::delete('/survey/questions/{question}', 'deleteQuestion');
         Route::post('/survey/questions/{question}', 'updateQuestion');
-        Route::post('/survey/questions/service/{service}', 'createServiceQuestion');
+        Route::post('/survey/questions/services/{service}', 'createServiceQuestion');
         Route::get('/survey/versions', 'getSurveys');
-        Route::get('/survey/versions/{survey:version}', 'getSurveyById');
+        Route::get('/survey/versions/{survey}', 'getSurveyById');
 
         Route::get('/answers', 'getAnswers');
         Route::post('/answers/{answer}/observation', 'addObservation');

@@ -30,7 +30,6 @@ class CreateServiceQuestionRequest extends FormRequest
         return [
             'text' => ['required', 'string'],
             'type' => ['required', Rule::enum(QuestionType::class)],
-            'order' => ['required', 'integer'],
         ];
     }
 }

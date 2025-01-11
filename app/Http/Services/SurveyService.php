@@ -11,7 +11,7 @@ readonly class SurveyService
 
     public function getCurrentSurvey()
     {
-        return Survey::query()->latest('version')->with('questions')->firstOrFail();
+        return Survey::query()->latest('version')->with('questions.service')->firstOrFail();
     }
 
     public function createSurvey(CreateSurveyRequestDto $requestDto)
