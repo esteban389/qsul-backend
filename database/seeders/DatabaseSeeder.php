@@ -18,10 +18,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        if(App::environment('prod')) {
+        if (App::environment('prod')) {
             $this->call(UserProductionSeeder::class);
+            $this->call(ProcessProductionSeeder::class);
         }
-        if (App::environment('local')){
+        if (App::environment('local')) {
             User::factory()->create([
                 'name' => 'Esteban Andrés Murcia Acuña',
                 'email' => 'estebana.murciaa@gmail.com',
@@ -33,13 +34,13 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Bogotá',
                 'address' => 'Carrera 1 # 1-1'
             ]);
-             Campus::factory()->create([
+            Campus::factory()->create([
                 'id' => 2,
                 'name' => 'Cúcuta',
                 'address' => 'Calle 1 # 1-1'
             ]);
-             Process::factory()->count(6)->create();
-             Service::factory()->count(6)->create();
+            $this->call(ProcessTestingSeeder::class);
+            Service::factory()->count(6)->create();
         }
     }
 }

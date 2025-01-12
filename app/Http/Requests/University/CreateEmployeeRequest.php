@@ -28,8 +28,8 @@ class CreateEmployeeRequest extends FormRequest
         return [
             'name' => ['required', 'string'],
             'email' => ['required', 'email'],
-            'avatar' => ['required', 'image', 'max:2048'],
-            'process_id'=> ['exists:processes,id'],
+            'avatar' => ['required', 'image', 'max:30720'],
+            'process_id' => ['exists:processes,id'],
         ];
     }
 }

@@ -28,7 +28,7 @@ class CreateCampusRequest extends FormRequest
         return [
             'name' => ['required', 'string'],
             'address' => ['required', 'string'],
-            'icon' => ['required', 'image', 'max:2048']
+            'icon' => ['required', 'image', 'max:30720']
         ];
     }
 }

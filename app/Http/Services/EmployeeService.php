@@ -24,23 +24,24 @@ readonly class EmployeeService
     public function getEmployees(): Collection
     {
         $query = Employee::query();
-        if(Auth::check()){
+        if (Auth::check()) {
             $query = Employee::withTrashed();
-            if(Auth::user()->hasRole(UserRole::CampusCoordinator)){
+            if (Auth::user()->hasRole(UserRole::CampusCoordinator)) {
                 $query = $query->where('campus_id', Auth::user()->campus_id);
             }
         }
         return QueryBuilder::for($query)
-            ->allowedFilters(['name', 'email'])
+            ->allowedFilters(['name', 'email', 'process.token'])
             ->allowedSorts(['name', 'email'])
-            ->allowedIncludes(['services','process'])
+            ->allowedIncludes(['services', 'process'])
             ->get();
     }
 
     /**
      * @throws ValidationException
      */
-    public function createEmployeeFromUser(CreateUserDto $createUserDto): Employee{
+    public function createEmployeeFromUser(CreateUserDto $createUserDto): Employee
+    {
 
         $campus = match (Auth::user()->role) {
             UserRole::NationalCoordinator => $createUserDto->campus_id,
@@ -68,11 +69,11 @@ readonly class EmployeeService
     public function createEmployee(CreateEmployeeRequestDto $requestDto): void
     {
         $campus = Auth::user()->campus_id;
-        $process_id = match (Auth::user()->role){
+        $process_id = match (Auth::user()->role) {
             UserRole::CampusCoordinator => $requestDto->process_id,
             UserRole::ProcessLeader => Auth::user()->employee()->first()->process_id,
         };
-        if(isset($requestDto->process_id) && Auth::user()->role === UserRole::ProcessLeader){
+        if (isset($requestDto->process_id) && Auth::user()->role === UserRole::ProcessLeader) {
             throw new AuthorizationException();
         }
         $path = $this->fileService->storeAvatar($requestDto->avatar);
@@ -90,14 +91,14 @@ readonly class EmployeeService
      */
     public function updateEmployee(Employee $employee, UpdateEmployeeRequestDto $requestDto): void
     {
-        $process_id = match (Auth::user()->role){
+        $process_id = match (Auth::user()->role) {
             UserRole::CampusCoordinator => $requestDto->process_id,
             UserRole::ProcessLeader => Auth::user()->employee()->first()->process_id,
         };
-        if(isset($requestDto->process_id) && Auth::user()->role === UserRole::ProcessLeader){
+        if (isset($requestDto->process_id) && Auth::user()->role === UserRole::ProcessLeader) {
             throw new AuthorizationException();
         }
-        if($requestDto->avatar) {
+        if ($requestDto->avatar) {
             $this->fileService->deleteAvatar($employee->avatar);
             $path = $this->fileService->storeAvatar($requestDto->avatar);
         }
@@ -124,7 +125,7 @@ readonly class EmployeeService
 
     public function addServiceToEmployee(Employee $employee, mixed $serviceId): void
     {
-        if($employee->services()->where('service_id', $serviceId)->exists()){
+        if ($employee->services()->where('service_id', $serviceId)->exists()) {
             return;
         }
         $employee->services()->attach($serviceId);

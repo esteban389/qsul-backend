@@ -28,7 +28,7 @@ class UpdateCampusRequest extends FormRequest
         return [
             'name' => ['string'],
             'address' => ['string'],
-            'icon' => ['image','max:2048'],
+            'icon' => ['image','max:30720'],
         ];
     }
 

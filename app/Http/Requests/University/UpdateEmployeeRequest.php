@@ -25,7 +25,7 @@ class UpdateEmployeeRequest extends FormRequest
         return [
             'name' => ['string'],
             'email' => ['email'],
-            'avatar' => ['image', 'max:2048'],
+            'avatar' => ['image', 'max:30720'],
             'process_id' => ['exists:processes,id'],
         ];
     }

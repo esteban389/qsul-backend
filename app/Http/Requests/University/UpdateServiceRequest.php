@@ -15,7 +15,7 @@ class UpdateServiceRequest extends FormRequest
      */
     public function authorize(): Response
     {
-        return Gate::authorize('create',Service::class);
+        return Gate::authorize('create', Service::class);
     }
 
     /**
@@ -27,8 +27,8 @@ class UpdateServiceRequest extends FormRequest
     {
         return [
             'name' => ['string'],
-            'icon' => ['image','max:2048'],
-            'process_id' => ['nullable','exists:processes,id'],
+            'icon' => ['image', 'max:30720'],
+            'process_id' => ['nullable', 'exists:processes,id'],
         ];
     }
 }

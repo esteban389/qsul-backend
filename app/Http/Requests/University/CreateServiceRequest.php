@@ -27,7 +27,7 @@ class CreateServiceRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string'],
-            'icon' => ['required', 'image','max:2048'],
+            'icon' => ['required', 'image','max:30720'],
             'process_id'=>['required','exists:processes,id']
         ];
     }

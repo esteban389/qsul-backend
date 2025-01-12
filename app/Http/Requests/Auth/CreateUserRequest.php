@@ -21,7 +21,7 @@ class CreateUserRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return Auth::check() && Auth::user()->role!==UserRole::ProcessLeader;
+        return Auth::check() && Auth::user()->role !== UserRole::ProcessLeader;
     }
 
 
@@ -34,9 +34,9 @@ class CreateUserRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'avatar' => ['required', 'image', 'max:2048'],
-            'campus_id' => ['nullable','integer','exists:'.Campus::class.',id'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:' . User::class],
+            'avatar' => ['required', 'image', 'max:30720'],
+            'campus_id' => ['nullable', 'integer', 'exists:' . Campus::class . ',id'],
         ];
     }
 }

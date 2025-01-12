@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthenticationController;
+use App\Http\Controllers\Notifications;
 use App\Http\Controllers\SurveyController;
 use App\Http\Controllers\UniversityController;
 use Illuminate\Http\Request;
@@ -57,6 +58,13 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('/respondent-types', 'createRespondentType');
         Route::delete('/respondent-types/{respondentType}', 'deleteRespondentType');
     });
+
+    Route::controller(Notifications::class)->group(function () {
+        Route::get('/notifications', 'notifications');
+        Route::get('/notifications/unread', 'unReadNotifications');
+        Route::post('/notifications/read', 'readNotifications');
+        Route::post('/notifications/{notification}', 'markAsRead');
+    });
 });
 
 Route::get('/campuses', [UniversityController::class, 'getCampuses']);
@@ -73,6 +81,6 @@ Route::get('/employees/{employee:token}', [UniversityController::class, 'getEmpl
 Route::get('/employees/{employee:token}/services', [UniversityController::class, 'getEmployeeServices']);
 
 Route::get('survey', [SurveyController::class, 'getCurrentSurvey']);
-Route::post('/answers', [SurveyController::class,'createAnswer']);
+Route::post('/answers', [SurveyController::class, 'createAnswer']);
 
 Route::get('/respondent-types', [SurveyController::class, 'getRespondentTypes']);

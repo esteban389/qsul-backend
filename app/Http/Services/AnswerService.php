@@ -4,9 +4,12 @@ namespace App\Http\Services;
 
 use App\DTOs\Auth\UserRole;
 use App\DTOs\Survey\AnswerSurveyRequestDto;
+use App\Events\SurveyCompletion;
 use App\Models\Answer;
+use App\Models\EmployeeService as EmployeeServiceModel;
 use Spatie\QueryBuilder\QueryBuilder;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Illuminate\Support\Facades\Auth;
 
 readonly class AnswerService
 {
@@ -17,7 +20,7 @@ readonly class AnswerService
 
     public function getAnswers()
     {
-         $query = Answer::withTrashed()->with([
+        $query = Answer::withTrashed()->with([
             'respondentType',
             'answerQuestions',
             'employeeService',
@@ -63,14 +66,21 @@ readonly class AnswerService
 
     public function createAnswers(AnswerSurveyRequestDto $requestDto)
     {
-        if($requestDto->version !== $this->surveyService->getCurrentSurvey()->version){
+        if ($requestDto->version !== $this->surveyService->getCurrentSurvey()->version) {
             throw new BadRequestHttpException('Survey version is not valid');
         }
         $respondentType = $this->respondentTypeService->getRespondentTypeById($requestDto->respondent_type_id);
 
         $currentSurvey = $this->surveyService->getCurrentSurvey();
         $answers = $requestDto->answers;
-        if($currentSurvey->questions->count() !== count($answers)){
+        $employeeService = EmployeeServiceModel::query()->findOrFail($requestDto->employee_service_id);
+        $currentQuestionsCount = $currentSurvey->questions
+            ->filter(function ($question) use ($employeeService) {
+                return $question->service_id === $employeeService->service_id ||
+                    $question->service_id === null;
+            })
+            ->count();
+        if ($currentQuestionsCount !== count($answers)) {
             throw new BadRequestHttpException('All questions must be answered');
         }
         $average = array_sum(array_column($answers, 'answer')) / count($answers);
@@ -88,5 +98,6 @@ readonly class AnswerService
                 'answer' => $answerQuestion->answer
             ]);
         }
+        event(new SurveyCompletion($answer));
     }
 }

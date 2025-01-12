@@ -27,7 +27,7 @@ class CreateProcessRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string'],
-            'icon' => ['required', 'image', 'max:2048'],
+            'icon' => ['required', 'image', 'max:30720'],
             'parent_id' => ['exists:processes,id'],
         ];
     }

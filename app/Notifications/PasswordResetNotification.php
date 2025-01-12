@@ -40,8 +40,7 @@ class PasswordResetNotification extends Notification implements ShouldQueue
             ->line(Lang::get('Password successfully updated!'))
             ->line(Lang::get('You are receiving this email because we received a password reset request for your account.'))
             ->line(Lang::get('You can log in by clicking the button below.'))
-            ->action(Lang::get('login'), config('app.frontend_url') . "/")
-            ->line('Thank you for using our application!');
+            ->action(Lang::get('login'), config('app.frontend_url') . "/");
     }
 
     /**

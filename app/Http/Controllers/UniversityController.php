@@ -38,13 +38,12 @@ class UniversityController extends Controller
 {
 
     public function __construct(
-        public readonly CampusService  $campusService,
+        public readonly CampusService $campusService,
         public readonly ProcessService $processService,
         public readonly ServiceService $serviceService,
         public readonly EmployeeService $employeeService,
         public readonly UserService $userService
-    )
-    {
+    ) {
     }
 
     public function getCampuses(): JsonResponse
@@ -106,7 +105,7 @@ class UniversityController extends Controller
 
     public function getProcessById(Process $process): JsonResponse
     {
-        $process->load('parent', 'subProcesses','services');
+        $process->load('parent', 'subProcesses', 'services');
         return response()->json($process);
     }
 
@@ -132,7 +131,7 @@ class UniversityController extends Controller
 
     public function deleteProcess(Process $process): Response
     {
-        Gate::authorize('delete',$process);
+        Gate::authorize('delete', $process);
         DB::transaction(function () use ($process) {
             $this->processService->deleteProcess($process);
         });
@@ -141,7 +140,7 @@ class UniversityController extends Controller
 
     public function restoreProcess(Process $process): Response
     {
-        Gate::authorize('restore',Process::class);
+        Gate::authorize('restore', Process::class);
         DB::transaction(function () use ($process) {
             $this->processService->restoreProcess($process);
         });
@@ -203,7 +202,13 @@ class UniversityController extends Controller
 
     public function getEmployeeById(Employee $employee): JsonResponse
     {
-        $employee->load('campus', 'process');
+        $employee->load([
+            'campus',
+            'process',
+            'services' => function ($query) {
+                $query->withPivot('id');  // Add any other pivot columns you need
+            }
+        ]);
         if (Auth::check()) {
             $employee->load('user');
         }
@@ -257,7 +262,7 @@ class UniversityController extends Controller
         Gate::authorize('delete', $employee);
         DB::transaction(function () use ($employee) {
             $this->employeeService->deleteEmployee($employee);
-            if($employee->user()->exists()){
+            if ($employee->user()->exists()) {
                 $this->userService->deleteUser($employee->user);
             }
         });
@@ -269,7 +274,7 @@ class UniversityController extends Controller
         Gate::authorize('restore', $employee);
         DB::transaction(function () use ($employee) {
             $this->employeeService->restoreEmployee($employee);
-            if($employee->user()->withTrashed()->exists()){
+            if ($employee->user()->withTrashed()->exists()) {
                 $this->userService->restoreUser($employee->user()->withTrashed()->first());
             }
         });

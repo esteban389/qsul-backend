@@ -11,7 +11,10 @@ use App\Models\RespondentType;
 use App\Models\Service;
 use App\Models\Survey;
 use App\Models\User;
+use Illuminate\Support\Facades\Notification;
 use Symfony\Component\HttpFoundation\Response;
+use App\Notifications\SurveyAnsweredNotification;
+use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
     $this->process = Process::factory()->create();
@@ -22,8 +25,8 @@ beforeEach(function () {
 
     $this->campus = Campus::factory()->create();
     $this->campus2 = Campus::factory()->create();
-    $this->employee = Employee::factory()->create(['campus_id' => $this->campus->id,'process_id'=>$this->process->id]);
-    $this->employee2 = Employee::factory()->create(['campus_id' => $this->campus2->id,'process_id'=>$this->process->id]);
+    $this->employee = Employee::factory()->create(['campus_id' => $this->campus->id, 'process_id' => $this->process->id]);
+    $this->employee2 = Employee::factory()->create(['campus_id' => $this->campus2->id, 'process_id' => $this->process->id]);
     $this->employee->services()->attach($this->service->id);
     $this->employee2->services()->attach($this->service->id);
     $this->employeeService = $this->employee->services()->withPivot("id")->first()->pivot;
@@ -158,11 +161,11 @@ test('Results can be exported to csv', function () {
     $this->assertCount(2, $rows);
 });
 
-test('National coordinator can add observation to answers', function (){
+test('National coordinator can add observation to answers', function () {
     $user = User::factory()->withRole(UserRole::NationalCoordinator)->create();
     $this->actingAs($user);
 
-    $response = $this->post('/api/answers/'.$this->answer->id. '/observation', [
+    $response = $this->post('/api/answers/' . $this->answer->id . '/observation', [
         'description' => 'This is an observation',
         'type' => 'positive',
     ]);
@@ -176,11 +179,11 @@ test('National coordinator can add observation to answers', function (){
     ]);
 });
 
-test('Campus coordinator can add observation to answers', function (){
+test('Campus coordinator can add observation to answers', function () {
     $user = User::factory()->withRole(UserRole::CampusCoordinator)->create(['campus_id' => $this->campus->id]);
     $this->actingAs($user);
 
-    $response = $this->post('/api/answers/'.$this->answer->id. '/observation', [
+    $response = $this->post('/api/answers/' . $this->answer->id . '/observation', [
         'description' => 'This is an observation',
         'type' => 'positive',
     ]);
@@ -194,11 +197,11 @@ test('Campus coordinator can add observation to answers', function (){
     ]);
 });
 
-test('Campus coordinator cannot add observation to answers from other campus', function (){
+test('Campus coordinator cannot add observation to answers from other campus', function () {
     $user = User::factory()->withRole(UserRole::CampusCoordinator)->create(['campus_id' => $this->campus2->id]);
     $this->actingAs($user);
 
-    $response = $this->post('/api/answers/'.$this->answer->id. '/observation', [
+    $response = $this->post('/api/answers/' . $this->answer->id . '/observation', [
         'description' => 'This is an observation',
         'type' => 'positive',
     ]);
@@ -206,11 +209,11 @@ test('Campus coordinator cannot add observation to answers from other campus', f
     $response->assertStatus(Response::HTTP_FORBIDDEN);
 });
 
-test('Process leader can add observation to answers', function (){
+test('Process leader can add observation to answers', function () {
     $user = User::factory()->withRole(UserRole::ProcessLeader)->create(['campus_id' => $this->campus->id, 'employee_id' => $this->employee->id]);
     $this->actingAs($user);
 
-    $response = $this->post('/api/answers/'.$this->answer->id. '/observation', [
+    $response = $this->post('/api/answers/' . $this->answer->id . '/observation', [
         'description' => 'This is an observation',
         'type' => 'positive',
     ]);
@@ -224,13 +227,13 @@ test('Process leader can add observation to answers', function (){
     ]);
 });
 
-test('Process leader cannot add observation to answers from other process', function (){
+test('Process leader cannot add observation to answers from other process', function () {
     $process2 = Process::factory()->create();
-    $employee3 = Employee::factory()->create(['campus_id' => $this->campus->id,'process_id'=>$process2->id]);
+    $employee3 = Employee::factory()->create(['campus_id' => $this->campus->id, 'process_id' => $process2->id]);
     $user = User::factory()->withRole(UserRole::ProcessLeader)->create(['campus_id' => $this->campus->id, 'employee_id' => $employee3->id]);
     $this->actingAs($user);
 
-    $response = $this->post('/api/answers/'.$this->answer->id. '/observation', [
+    $response = $this->post('/api/answers/' . $this->answer->id . '/observation', [
         'description' => 'This is an observation',
         'type' => 'positive',
     ]);
@@ -238,11 +241,11 @@ test('Process leader cannot add observation to answers from other process', func
     $response->assertStatus(Response::HTTP_FORBIDDEN);
 });
 
-test('National coordinator can ignore a result', function (){
+test('National coordinator can ignore a result', function () {
     $user = User::factory()->withRole(UserRole::NationalCoordinator)->create();
     $this->actingAs($user);
 
-    $response = $this->post('/api/answers/'.$this->answer->id. '/ignore', [
+    $response = $this->post('/api/answers/' . $this->answer->id . '/ignore', [
         'description' => 'This is an observation',
         'type' => 'negative',
     ]);
@@ -260,7 +263,14 @@ test('National coordinator can ignore a result', function (){
     ]);
 });
 
-test('Anyone can answer the survey', function (){
+test('Anyone can answer the survey', function () {
+    $nationalCoordinator = User::factory()->withRole(UserRole::NationalCoordinator)->create();
+    $campusCoordinator = User::factory()->withRole(UserRole::CampusCoordinator)->create(['campus_id' => $this->campus->id]);
+    $processLeader = User::factory()->withRole(UserRole::ProcessLeader)->create(['campus_id' => $this->campus->id, 'employee_id' => $this->employee->id]);
+
+    Event::fake();
+    Notification::fake();
+
     $response = $this->post('/api/answers', [
         'version' => $this->survey->version,
         'respondent_type_id' => $this->respondentType->id,
@@ -295,9 +305,12 @@ test('Anyone can answer the survey', function (){
         'question_id' => $this->question2->id,
         'answer' => 4,
     ]);
+
+    Event::assertDispatched(\App\Events\SurveyCompletion::class);
+    Notification::assertCount(1);
 });
 
-test('National coordinator can create respondent types', function (){
+test('National coordinator can create respondent types', function () {
     $user = User::factory()->withRole(UserRole::NationalCoordinator)->create();
     $this->actingAs($user);
 
@@ -311,11 +324,11 @@ test('National coordinator can create respondent types', function (){
     ]);
 });
 
-test('National coordinator can delete respondent types', function (){
+test('National coordinator can delete respondent types', function () {
     $user = User::factory()->withRole(UserRole::NationalCoordinator)->create();
     $this->actingAs($user);
 
-    $response = $this->delete('/api/respondent-types/'.$this->respondentType->id);
+    $response = $this->delete('/api/respondent-types/' . $this->respondentType->id);
 
     $response->assertStatus(Response::HTTP_NO_CONTENT);
     $this->assertSoftDeleted('respondent_types', [
@@ -323,7 +336,7 @@ test('National coordinator can delete respondent types', function (){
     ]);
 });
 
-test('Anyone can get all respondent types', function (){
+test('Anyone can get all respondent types', function () {
     $response = $this->get('/api/respondent-types');
 
     $response->assertStatus(Response::HTTP_OK);
