@@ -5,11 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Carbon\Carbon;
 
 class Answer extends Model
 {
 
-    use HasFactory,SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'employee_service_id',
@@ -42,5 +43,24 @@ class Answer extends Model
     public function observations()
     {
         return $this->hasMany(Observation::class);
+    }
+
+    public function scopeDateBefore($query, $date)
+    {
+        return $query->where('created_at', '<=', Carbon::parse($date));
+    }
+
+    public function scopeDateAfter($query, $date)
+    {
+        return $query->where('created_at', '>=', Carbon::parse($date));
+    }
+
+    public function scopeResult($query, $result)
+    {
+        return match ($result) {
+            'good' => $query->where('average', '>=', 4),
+            'sufficent' => $query->where('average', '>=', 3)->where('average', '<', 4),
+            default => $query->where('average', '<', 3),
+        };
     }
 }

@@ -52,6 +52,8 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::get('/survey/versions/{survey}', 'getSurveyById');
 
         Route::get('/answers', 'getAnswers');
+        Route::get('/answers/{answer}', 'getAnswerById');
+        Route::get('/answers/{answer}/observations', 'getAnswerObservations');
         Route::post('/answers/{answer}/observation', 'addObservation');
         Route::post('/answers/{answer}/ignore', 'ignoreAnswer');
 

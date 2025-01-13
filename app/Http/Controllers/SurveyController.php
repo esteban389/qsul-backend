@@ -94,6 +94,24 @@ class SurveyController extends Controller
         return $this->answerService->getAnswers();
     }
 
+    public function getAnswerById(Answer $answer)
+    {
+        return $answer->load([
+            'observations',
+            'answerQuestions',
+            'respondentType',
+            'survey',
+            'employeeService',
+            'employeeService.employee',
+            'employeeService.service',
+        ]);
+    }
+
+    public function getAnswerObservations(Answer $answer)
+    {
+        return $answer->observations;
+    }
+
     public function addObservation(Answer $answer, AddObservationRequest $request)
     {
         $requestDto = AddObservationRequestDto::fromRequest($request);

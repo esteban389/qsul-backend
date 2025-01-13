@@ -10,6 +10,7 @@ use App\Models\EmployeeService as EmployeeServiceModel;
 use Spatie\QueryBuilder\QueryBuilder;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Illuminate\Support\Facades\Auth;
+use Spatie\QueryBuilder\AllowedFilter;
 
 readonly class AnswerService
 {
@@ -20,13 +21,17 @@ readonly class AnswerService
 
     public function getAnswers()
     {
+        // Get all answers with their relationships ordered by creation date and survey version
         $query = Answer::withTrashed()->with([
             'respondentType',
-            'answerQuestions',
+            'survey',
             'employeeService',
             'employeeService.employee',
             'employeeService.service',
-        ]);
+        ])->join('surveys', 'answers.survey_id', '=', 'surveys.id')
+            ->select('answers.*')
+            ->orderBy('answers.created_at', 'desc')
+            ->orderBy('surveys.version', 'desc');
 
         $user = auth()->user();
 
@@ -48,11 +53,15 @@ readonly class AnswerService
 
         return QueryBuilder::for($query)
             ->allowedFilters([
-                'average',
-                'respondent_type_id',
-                'employee_service_id',
-                'survey_id',
-                'email'
+                AllowedFilter::exact('survey_id'),
+                AllowedFilter::exact('respondent_type_id'),
+                AllowedFilter::exact('employeeService.service_id'),
+                AllowedFilter::exact('employeeService.employee.campus_id'),
+                AllowedFilter::exact('employeeService.employee.process_id'),
+                'email',
+                AllowedFilter::scope('before', 'date_before'),
+                AllowedFilter::scope('after', 'date_after'),
+                AllowedFilter::scope('result'),
             ])
             ->allowedSorts(['created_at'])
             ->allowedIncludes(['survey', 'employeeService'])
