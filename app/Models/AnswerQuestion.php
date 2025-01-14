@@ -5,10 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use OwenIt\Auditing\Auditable as AuditingAuditable;
+use OwenIt\Auditing\Contracts\Auditable;
 
-class AnswerQuestion extends Model
+class AnswerQuestion extends Model implements Auditable
 {
-    use HasFactory;
+    use HasFactory, AuditingAuditable;
 
     protected $table = 'answer_question';
 

@@ -10,6 +10,7 @@
         "laravel/framework": "^11.9",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
+        "owen-it/laravel-auditing": "^13.6",
         "spatie/laravel-query-builder": "^6.2"
     },
     "require-dev": {

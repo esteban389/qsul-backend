@@ -67,6 +67,15 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('/notifications/read', 'readNotifications');
         Route::post('/notifications/{notification}', 'markAsRead');
     });
+
+    //Auditing routes
+    Route::get('/audits', function () {
+        return \OwenIt\Auditing\Models\Audit::latest()->get();
+    });
+
+    Route::get('/audits/{audit}', function (\OwenIt\Auditing\Models\Audit $audit) {
+        return $audit->getMetadata();
+    });
 });
 
 Route::get('/campuses', [UniversityController::class, 'getCampuses']);

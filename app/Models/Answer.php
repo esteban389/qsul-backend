@@ -6,11 +6,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
+use OwenIt\Auditing\Auditable as AuditingAuditable;
+use OwenIt\Auditing\Contracts\Auditable;
 
-class Answer extends Model
+class Answer extends Model implements Auditable
 {
 
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, AuditingAuditable;
 
     protected $fillable = [
         'employee_service_id',
