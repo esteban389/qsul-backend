@@ -98,7 +98,9 @@ class SurveyController extends Controller
     {
         return $answer->load([
             'observations',
+            'observations.user',
             'answerQuestions',
+            'answerQuestions.question',
             'respondentType',
             'survey',
             'employeeService',
