@@ -24,6 +24,7 @@ use App\Models\Question;
 use App\Models\RespondentType;
 use App\Models\Service;
 use App\Models\Survey;
+use App\Models\Observation;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -123,14 +124,28 @@ class SurveyController extends Controller
         return response()->created();
     }
 
+    public function deleteObservation(Observation $observation)
+    {
+        Gate::authorize('delete', $observation);
+        $this->observationService->deleteObservation($observation);
+    }
+
     public function ignoreAnswer(Answer $answer, AddObservationRequest $request)
     {
+        Gate::authorize('ignore', $answer);
         $requestDto = AddObservationRequestDto::fromRequest($request);
         DB::transaction(function () use ($answer, $requestDto) {
             $this->answerService->delete($answer);
             $this->observationService->addObservationToAnswer($requestDto, $answer);
         });
         return \response()->noContent();
+    }
+
+    public function restoreAnswer(Answer $answer)
+    {
+        Gate::authorize('restore', $answer);
+        $this->answerService->restore($answer);
+        return response()->noContent();
     }
 
     public function createAnswer(AnswerSurveyRequest $request)

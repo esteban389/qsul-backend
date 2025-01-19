@@ -65,4 +65,12 @@ class Answer extends Model implements Auditable
             default => $query->where('average', '<', 3),
         };
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function auditable()
+    {
+        return $this->morphTo()->withTrashed();
+    }
 }

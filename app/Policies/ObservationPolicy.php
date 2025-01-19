@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\DTOs\Auth\UserRole;
 use App\Models\Answer;
+use App\Models\Observation;
 use App\Models\User;
 
 class ObservationPolicy
@@ -18,21 +19,26 @@ class ObservationPolicy
 
     public function create(User $user, Answer $answer)
     {
-        if($user->hasRole(UserRole::NationalCoordinator)){
+        if ($user->hasRole(UserRole::NationalCoordinator)) {
             return true;
         }
 
-        if($user->hasRole(UserRole::CampusCoordinator)){
+        if ($user->hasRole(UserRole::CampusCoordinator)) {
             $employeeService = $answer->employeeService()->first();
             return $employeeService->employee->campus_id === $user->campus_id;
         }
 
-        if($user->hasRole(UserRole::ProcessLeader)){
+        if ($user->hasRole(UserRole::ProcessLeader)) {
             $employeeService = $answer->employeeService()->first();
             $user->load('employee');
             return $employeeService->employee->campus_id === $user->campus_id && $employeeService->employee->process_id === $user->employee->process_id;
         }
 
         return false;
+    }
+
+    public function delete(User $user, Observation $observation)
+    {
+        return $user->id === $observation->user_id;
     }
 }

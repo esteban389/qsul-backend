@@ -52,14 +52,24 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::get('/survey/versions/{survey}', 'getSurveyById');
 
         Route::get('/answers', 'getAnswers');
-        Route::get('/answers/{answer}', 'getAnswerById');
-        Route::get('/answers/{answer}/observations', 'getAnswerObservations');
-        Route::post('/answers/{answer}/observation', 'addObservation');
+        Route::get('/answers/{answer}', 'getAnswerById')->withTrashed();
+        Route::post('/answers/{answer}/observations', 'addObservation');
         Route::post('/answers/{answer}/ignore', 'ignoreAnswer');
+        Route::post('/answers/{answer}/restore', 'restoreAnswer')->withTrashed();
+        //TODO: Implement
+        Route::delete('observations/{observation}', 'deleteObservation');
 
         Route::post('/respondent-types', 'createRespondentType');
         Route::delete('/respondent-types/{respondentType}', 'deleteRespondentType');
     });
+
+    /*TODO implement profile management routes
+    Route::controller(ProfileController::class)->group(function () {
+        Route::get('/profile', 'getProfile');
+        Route::post('/profile', 'updateProfile');
+        Route::post('/profile/password', 'updatePassword');
+    });
+    */
 
     Route::controller(Notifications::class)->group(function () {
         Route::get('/notifications', 'notifications');

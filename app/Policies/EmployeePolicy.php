@@ -7,6 +7,7 @@ use App\Models\Employee;
 use App\Models\Service;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
+use Illuminate\Support\Facades\Lang;
 
 class EmployeePolicy
 {
@@ -28,7 +29,7 @@ class EmployeePolicy
     public function update(User $user, Employee $employee): Response
     {
         if ($employee->user()->exists()) {
-            return Response::deny();
+            return Response::deny(Lang::get('uiniversity.cannot_update_employee_with_user'));
         }
 
         if ($user->hasRole(UserRole::NationalCoordinator)) {
@@ -48,6 +49,10 @@ class EmployeePolicy
 
     public function delete(User $user, Employee $employee): Response
     {
+        if ($employee->user()->exists()) {
+            return Response::deny(Lang::get('university.cannot_update_employee_with_user'));
+        }
+
         if ($user->hasRole(UserRole::CampusCoordinator) && ($employee->campus_id !== $user->campus_id)) {
             return Response::deny();
         }

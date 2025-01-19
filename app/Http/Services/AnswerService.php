@@ -73,6 +73,11 @@ readonly class AnswerService
         $answer->delete();
     }
 
+    public function restore(Answer $answer)
+    {
+        $answer->restore();
+    }
+
     public function createAnswers(AnswerSurveyRequestDto $requestDto)
     {
         if ($requestDto->version !== $this->surveyService->getCurrentSurvey()->version) {
