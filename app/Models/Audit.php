@@ -58,5 +58,9 @@ class Audit extends Model implements \OwenIt\Auditing\Contracts\Audit
     return $this->morphTo()->withTrashed();
   }
 
+  public function author()
+  {
+    return $this->belongsTo(User::class, 'user_id');
+  }
 }
 

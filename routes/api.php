@@ -56,7 +56,6 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('/answers/{answer}/observations', 'addObservation');
         Route::post('/answers/{answer}/ignore', 'ignoreAnswer');
         Route::post('/answers/{answer}/restore', 'restoreAnswer')->withTrashed();
-        //TODO: Implement
         Route::delete('observations/{observation}', 'deleteObservation');
 
         Route::post('/respondent-types', 'createRespondentType');
@@ -80,7 +79,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     //Auditing routes
     Route::get('/audits', function () {
-        return \OwenIt\Auditing\Models\Audit::latest()->get();
+        return App\Models\Audit::latest()->with('author')->get();
     });
 
     Route::get('/audits/{audit}', function (\OwenIt\Auditing\Models\Audit $audit) {
