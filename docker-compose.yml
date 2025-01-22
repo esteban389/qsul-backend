@@ -11,7 +11,6 @@ services:
             - .:/var/www/html
         depends_on:
             - mysql
-            - redis
         networks:
             - laravel-network
         restart: unless-stopped
@@ -27,7 +26,6 @@ services:
         command: php artisan queue:work
         depends_on:
             - mysql
-            - redis
         networks:
             - laravel-network
         restart: unless-stopped
@@ -39,21 +37,14 @@ services:
             - "3306"
         environment:
             MYSQL_ROOT_PASSWORD: root
-            MYSQL_DATABASE: csul_backend
-            MYSQL_USER: csul_backend
+            MYSQL_DATABASE: qsul-db
+            MYSQL_USER: qsul_backend
             MYSQL_PASSWORD: laravel
         restart: unless-stopped
         networks:
             - laravel-network
-
-    # Redis
-    redis:
-        image: redis:alpine
-        expose:
-            - "6379"
-        restart: unless-stopped
-        networks:
-            - laravel-network
+        volumes:
+            - .database:/var/lib/mysql
 
 # Define the custom network
 networks:

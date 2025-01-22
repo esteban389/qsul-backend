@@ -18,11 +18,12 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call(SurveyProductionSeeder::class);
         if (App::environment('prod')) {
             $this->call(UserProductionSeeder::class);
             $this->call(ProcessProductionSeeder::class);
         }
-        if (App::environment('local')) {
+        if (App::environment('local') || App::environment('dev')) {
             User::factory()->create([
                 'name' => 'Esteban Andrés Murcia Acuña',
                 'email' => 'estebana.murciaa@gmail.com',
@@ -40,7 +41,13 @@ class DatabaseSeeder extends Seeder
                 'address' => 'Calle 1 # 1-1'
             ]);
             $this->call(ProcessTestingSeeder::class);
-            Service::factory()->count(6)->create();
+            $processes = Process::all();
+            // Create 6 services for each process
+            foreach ($processes as $process) {
+                Service::factory()->count(6)->create([
+                    'process_id' => $process->id,
+                ]);
+            }
         }
     }
 }
