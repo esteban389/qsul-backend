@@ -41,6 +41,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::patch('/employees/{employee}', 'restoreEmployee')->withTrashed();
         Route::post('/employees/{employee}/services', 'addEmployeeService');
         Route::delete('/employees/{employee}/services/{service}', 'removeEmployeeService');
+        Route::get('/employees/{employee}/url','getEmployeeUrl');
     });
 
     Route::controller(SurveyController::class)->group(function () {
