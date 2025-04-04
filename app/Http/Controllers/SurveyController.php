@@ -15,10 +15,12 @@ use App\Http\Requests\Survey\CreateServiceQuestionRequest;
 use App\Http\Requests\Survey\CreateSurveyRequest;
 use App\Http\Requests\Survey\UpdateQuestionRequest;
 use App\Http\Services\AnswerService;
+use App\Http\Services\EmployeeService;
 use App\Http\Services\ObservationService;
 use App\Http\Services\QuestionService;
 use App\Http\Services\RespondentTypeService;
 use App\Http\Services\SurveyService;
+use App\Mail\EmployeeSurveyed;
 use App\Models\Answer;
 use App\Models\Question;
 use App\Models\RespondentType;
@@ -28,11 +30,12 @@ use App\Models\Observation;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Mail;
 
 class SurveyController extends Controller
 {
 
-    public function __construct(private readonly SurveyService $surveyService, private readonly QuestionService $questionService, private readonly AnswerService $answerService, private readonly ObservationService $observationService, private readonly RespondentTypeService $respondentService)
+    public function __construct(private readonly SurveyService $surveyService, private readonly EmployeeService $employeeService, private readonly QuestionService $questionService, private readonly AnswerService $answerService, private readonly ObservationService $observationService, private readonly RespondentTypeService $respondentService)
     {
     }
 
@@ -107,6 +110,7 @@ class SurveyController extends Controller
             'employeeService',
             'employeeService.employee',
             'employeeService.service',
+            'answerObservation'
         ]);
     }
 
@@ -153,6 +157,8 @@ class SurveyController extends Controller
         $requestDto = AnswerSurveyRequestDto::fromRequest($request);
         DB::transaction(function () use ($requestDto) {
             $this->answerService->createAnswers($requestDto);
+            $employee = $this->employeeService->getEmployeeByEmployeeServiceId($requestDto->employee_service_id);
+            Mail::to($employee->email)->send(new EmployeeSurveyed());
         });
         return response()->created();
     }
