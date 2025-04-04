@@ -7,6 +7,7 @@ use App\DTOs\Auth\UserRole;
 use App\DTOs\University\CreateEmployeeRequestDto;
 use App\DTOs\University\UpdateEmployeeRequestDto;
 use App\Models\Employee;
+use App\Models\EmployeeService as EmployeeServiceModel;
 use App\Models\Service;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Collection;
@@ -136,4 +137,13 @@ readonly class EmployeeService
         $employee->services()->detach($service);
     }
 
+    public function getEmployeeByEmployeeServiceId(int $employeeServiceId): Employee
+    {
+        //Query the employee that by checking the employeeServices intermediate relationship table that connects with Services has the employeeServiceId
+        return EmployeeServiceModel::query()
+            ->where('id', $employeeServiceId)
+            ->firstOrFail()
+            ->employee;
+
+    }
 }

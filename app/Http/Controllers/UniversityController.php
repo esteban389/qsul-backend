@@ -280,4 +280,11 @@ class UniversityController extends Controller
         });
         return \response()->noContent();
     }
+
+    public function getEmployeeUrl(Employee $employee): JsonResponse
+    {
+        $url = env('frontend_url') . '/encuesta/' . $employee->campus->token . "/" . $employee->process->token . "/" . $employee->token;
+
+        return response()->json(['url'=>$url]);
+    }
 }

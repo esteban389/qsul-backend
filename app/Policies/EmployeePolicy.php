@@ -66,10 +66,20 @@ class EmployeePolicy
 
     public function restore(User $user, Employee $employee): Response
     {
-        return ($user->hasRole(UserRole::CampusCoordinator) && ($employee->campus_id === $user->campus_id))
-            || ($user->hasRole(UserRole::ProcessLeader) && ($employee->process_id === $user->employee()->first()->process_id) && ($employee->campus_id === $user->campus_id))
-            ? Response::allow()
-            : Response::deny();
+        if ($employee->user()->exists()) {
+            return Response::deny(Lang::get('university.cannot_update_employee_with_user'));
+        }
+
+        if ($user->hasRole(UserRole::CampusCoordinator) && ($employee->campus_id !== $user->campus_id)) {
+            return Response::deny();
+        }
+
+        if ($user->hasRole(UserRole::ProcessLeader) && ($employee->process_id !== $user->employee()->first()->process_id || $employee->campus_id !== $user->campus_id)) {
+            return Response::deny();
+        }
+
+        return Response::allow();
+
     }
 
     public function addService(User $user, Employee $employee, Service $service): Response

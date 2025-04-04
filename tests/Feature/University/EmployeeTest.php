@@ -444,6 +444,16 @@ test('Process leader can\'t change employee\'s process', function () {
         Storage::disk('public')->assertMissing('avatars/' . $employeeImage->hashName());
 });
 
+test('National coordinator can delete any employee', function(){
+    $user = User::factory()->withRole(UserRole::NationalCoordinator)->create();
+    $this->actingAs($user);
+
+    $response = $this->delete('/api/employees/' . $this->employee[1]->id);
+
+    $response->assertStatus(Response::HTTP_NO_CONTENT);
+    $this->assertSoftDeleted($this->employee[1]);
+});
+
 test('Campus coordinator can delete an employee inside their campus', function () {
 
     $user = User::factory()->withRole(UserRole::CampusCoordinator)->create([
@@ -463,7 +473,10 @@ test('User associated with employee is deleted when employee is deleted', functi
     $authenticatingUser = User::factory()->withRole(UserRole::CampusCoordinator)->create([
         'campus_id' => $this->campus->id
     ]);
-    $this->actingAs($authenticatingUser)->delete('/api/employees/' . $this->employee[0]->id);
+
+    $response = $this->actingAs($authenticatingUser)->delete('/api/employees/' . $this->employee[0]->id);
+
+    $response->assertStatus(Response::HTTP_NO_CONTENT);
 
     $this->assertSoftDeleted($this->employee[0]);
     $this->assertSoftDeleted($user);
