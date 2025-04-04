@@ -29,7 +29,8 @@ class AnswerSurveyRequest extends FormRequest
             'employee_service_id' => ['required','exists:employee_service,id'],
             'answers' => ['required','array'],
             'answers.*.question_id' => ['required','integer'],
-            'answers.*.answer' =>['required','integer']
+            'answers.*.answer' =>['required','integer'],
+            'observation' => ['nullable','string'],
         ];
     }
 }

@@ -13,6 +13,7 @@ readonly class AnswerSurveyRequestDto implements DataTransferObject
      * @param int $respondent_type_id
      * @param int $employee_service_id
      * @param AnswerDto[] $answers
+     * @param string|null $observation
      */
     public function __construct(
         public int    $version,
@@ -20,6 +21,7 @@ readonly class AnswerSurveyRequestDto implements DataTransferObject
         public int    $respondent_type_id,
         public int   $employee_service_id,
         public array  $answers,
+        public ?string $observation = null
     )
     {
     }
@@ -35,6 +37,7 @@ readonly class AnswerSurveyRequestDto implements DataTransferObject
             respondent_type_id: $request->validated(['respondent_type_id']),
             employee_service_id: $request->validated(['employee_service_id']),
             answers: array_map(fn($answer) => new AnswerDto($answer['question_id'], $answer['answer']), $request->validated(['answers'])),
+            observation: $request->validated(['observation'])
         );
     }
 
@@ -48,7 +51,8 @@ readonly class AnswerSurveyRequestDto implements DataTransferObject
             'email' => $this->email,
             'respondent_type_id' => $this->respondent_type_id,
             'employee_service_id' => $this->employee_service_id,
-            'answers' => array_map(fn($answer) => $answer->toArray(), $this->answers)
+            'answers' => array_map(fn($answer) => $answer->toArray(), $this->answers),
+            'observation' => $this->observation
         ];
     }
 }

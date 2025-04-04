@@ -280,6 +280,7 @@ test('Anyone can answer the survey', function () {
                 'answer' => 4,
             ],
         ],
+        'observation' => 'This is an observation',
     ]);
 
     $response->assertStatus(Response::HTTP_CREATED);
@@ -298,6 +299,10 @@ test('Anyone can answer the survey', function () {
     $this->assertDatabaseHas('answer_question', [
         'question_id' => $this->question2->id,
         'answer' => 4,
+    ]);
+
+    $this->assertDatabaseHas('answer_observations', [
+        'observation' => 'This is an observation',
     ]);
 });
 

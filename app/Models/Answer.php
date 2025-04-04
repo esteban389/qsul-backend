@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
 use OwenIt\Auditing\Auditable as AuditingAuditable;
@@ -19,7 +20,8 @@ class Answer extends Model implements Auditable
         'survey_id',
         'average',
         'email',
-        'respondent_type_id'
+        'respondent_type_id',
+        'answer_observation_id'
     ];
 
     public function employeeService()
@@ -45,6 +47,11 @@ class Answer extends Model implements Auditable
     public function observations()
     {
         return $this->hasMany(Observation::class);
+    }
+
+    public function answerObservation(): BelongsTo
+    {
+        return $this->belongsTo(AnswerObservation::class);
     }
 
     public function scopeDateBefore($query, $date)

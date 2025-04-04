@@ -6,6 +6,7 @@ use App\DTOs\Auth\UserRole;
 use App\DTOs\Survey\AnswerSurveyRequestDto;
 use App\Events\SurveyCompletion;
 use App\Models\Answer;
+use App\Models\AnswerObservation;
 use App\Models\EmployeeService as EmployeeServiceModel;
 use Spatie\QueryBuilder\QueryBuilder;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -68,17 +69,17 @@ readonly class AnswerService
             ->get();
     }
 
-    public function delete(Answer $answer)
+    public function delete(Answer $answer): void
     {
         $answer->delete();
     }
 
-    public function restore(Answer $answer)
+    public function restore(Answer $answer): void
     {
         $answer->restore();
     }
 
-    public function createAnswers(AnswerSurveyRequestDto $requestDto)
+    public function createAnswers(AnswerSurveyRequestDto $requestDto): void
     {
         if ($requestDto->version !== $this->surveyService->getCurrentSurvey()->version) {
             throw new BadRequestHttpException('Survey version is not valid');
@@ -98,13 +99,23 @@ readonly class AnswerService
             throw new BadRequestHttpException('All questions must be answered');
         }
         $average = array_sum(array_column($answers, 'answer')) / count($answers);
-        $answer = Answer::query()->create([
+
+        $data = array_filter([
             'email' => $requestDto->email,
             'respondent_type_id' => $respondentType->id,
             'survey_id' => $currentSurvey->id,
             'employee_service_id' => $requestDto->employee_service_id,
-            'average' => $average
-        ]);
+            'average' => $average,
+        ], fn($value) => $value !== null);
+
+        $answer = Answer::query()->create($data);
+        if ($requestDto->observation) {
+            $answerObservation = AnswerObservation::query()->create([
+                'observation' => $requestDto->observation,
+            ]);
+            $answer->answerObservation()->associate($answerObservation);
+            $answer->save();
+        }
 
         foreach ($answers as $answerQuestion) {
             $answer->answerQuestions()->create([
