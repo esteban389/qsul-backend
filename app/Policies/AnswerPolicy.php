@@ -23,7 +23,7 @@ class AnswerPolicy
             return Response::deny();
         }
 
-        if ($user->hasRole(UserRole::CampusCoordinator) && $answer->employee->campus_id !== $user->campus_id) {
+        if ($user->hasRole(UserRole::CampusCoordinator) && $answer->employeeService->employee->campus_id !== $user->campus_id) {
             return Response::deny();
         }
 
@@ -36,10 +36,24 @@ class AnswerPolicy
             return Response::deny();
         }
 
-        if ($user->hasRole(UserRole::CampusCoordinator) && $answer->employee->campus_id !== $user->campus_id) {
+        if ($user->hasRole(UserRole::CampusCoordinator) && $answer->employeeService->employee->campus_id !== $user->campus_id) {
             return Response::deny();
         }
 
         return Response::allow();
+    }
+
+    public function solve(User $user, Answer $answer)
+    {
+
+        if ($user->hasRole(UserRole::CampusCoordinator) && $answer->employeeService->employee->campus_id === $user->campus_id) {
+            return Response::allow();
+        }
+
+        if ($user->hasRole(UserRole::ProcessLeader) && $answer->employeeService->employee->campus_id === $user->campus_id) {
+            return Response::allow();
+        }
+
+        return Response::deny();
     }
 }

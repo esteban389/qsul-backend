@@ -1,6 +1,10 @@
 <?php
 
 use App\DTOs\Auth\UserRole;
+use App\Events\AnswerSolved;
+use App\Listeners\EmailClientAnswerSolved;
+use App\Listeners\NotifyCampusCoordinatorAnswerSolved;
+use App\Mail\ToClientAnswerSolved;
 use App\Models\Answer;
 use App\Models\AnswerQuestion;
 use App\Models\Campus;
@@ -11,6 +15,13 @@ use App\Models\RespondentType;
 use App\Models\Service;
 use App\Models\Survey;
 use App\Models\User;
+use App\Notifications\ToCampusCoordinatorAnswerSolved;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Queue;
 use Symfony\Component\HttpFoundation\Response;
 
 beforeEach(function () {
@@ -343,4 +354,74 @@ test('Anyone can get all respondent types', function () {
             'name' => $this->respondentType->name,
         ]
     ]);
+});
+
+test('Process Leader can respond or solve a survey answer', function () {
+    Mail::fake();
+    Event::fake();
+    Notification::fake();
+
+    $user = User::factory()->withRole(UserRole::ProcessLeader)
+        ->create([
+            'campus_id' => $this->campus->id,
+            'employee_id' => $this->employee->id
+        ]);
+
+    $this->actingAs($user);
+
+    $response = $this->post('/api/answers/' . $this->answer->id . '/solve', [
+        'observation' => 'This is an observation',
+        'type' => 'positive',
+    ]);
+
+    $response->assertNoContent();
+    //Check the database has the observation associated with the answer
+    $this->assertDatabaseHas('observations', [
+        'description' => 'This is an observation',
+        'type' => 'positive',
+        'answer_id' => $this->answer->id,
+        'user_id' => $user->id,
+    ]);
+    //Check the answer has the solved_at column filled with today's day
+    $answer = Answer::find($this->answer->id);
+    $this->assertNotNull($answer->solved_at);
+    expect(Carbon::create($answer->solved_at)->isSameDay(now()))->toBeTrue();
+
+    //Check if the person from the answer was emailed
+    Event::assertDispatched(
+        AnswerSolved::class,
+        function ($event) use ($user) {
+            return $event->answer->email === $this->answer->email;
+        }
+    );
+    Event::assertListening(
+        AnswerSolved::class,
+        EmailClientAnswerSolved::class
+    );
+
+    Event::assertListening(
+        AnswerSolved::class,
+        NotifyCampusCoordinatorAnswerSolved::class
+    );
+
+    (new EmailClientAnswerSolved)->handle(new AnswerSolved($this->answer,$this->answer->observations()->latest()->first()));
+    Mail::assertSent(ToClientAnswerSolved::class, function ($mail) {
+        return $mail->hasTo($this->answer->email);
+    });
+
+    //Check if the campus coordinator was notified
+
+    $user = User::factory()->withRole(UserRole::CampusCoordinator)
+        ->create([
+            'campus_id' => $this->campus->id,
+            'employee_id' => $this->employee2->id
+        ]);
+    (new NotifyCampusCoordinatorAnswerSolved())->handle(new AnswerSolved($this->answer,$this->answer->observations()->latest()->first()));
+    Notification::assertSentTo(
+        $user,
+        ToCampusCoordinatorAnswerSolved::class,
+        function ($notification, $channels) use ($user) {
+            return $notification->answer->email === $this->answer->email;
+        }
+    );
 });

@@ -4,10 +4,13 @@ namespace App\Http\Services;
 
 use App\DTOs\Auth\UserRole;
 use App\DTOs\Survey\AnswerSurveyRequestDto;
+use App\DTOs\Survey\SolveAnswerRequestDto;
+use App\Events\AnswerSolved;
 use App\Events\SurveyCompletion;
 use App\Models\Answer;
 use App\Models\AnswerObservation;
 use App\Models\EmployeeService as EmployeeServiceModel;
+use App\Models\Observation;
 use Spatie\QueryBuilder\QueryBuilder;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Illuminate\Support\Facades\Auth;
@@ -124,5 +127,20 @@ readonly class AnswerService
             ]);
         }
         event(new SurveyCompletion($answer));
+    }
+
+    public function solve(Answer $answer, SolveAnswerRequestDto $requestDto): void
+    {
+        $answer->update([
+            'solved_at' => now(),
+        ]);
+
+        $user = auth()->user();
+        $observation = $answer->observations()->create([
+            'user_id' => $user->id,
+            'description' => $requestDto->observation,
+            'type' => $requestDto->type,
+        ]);
+        event(new AnswerSolved($answer, $observation));
     }
 }

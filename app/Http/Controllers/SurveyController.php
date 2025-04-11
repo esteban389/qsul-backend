@@ -7,12 +7,14 @@ use App\DTOs\Survey\AnswerSurveyRequestDto;
 use App\DTOs\Survey\CreateRespondentTypeRequestDto;
 use App\DTOs\Survey\CreateServiceQuestionRequestDto;
 use App\DTOs\Survey\CreateSurveyRequestDto;
+use App\DTOs\Survey\SolveAnswerRequestDto;
 use App\DTOs\Survey\UpdateQuestionRequestDto;
 use App\Http\Requests\Survey\AddObservationRequest;
 use App\Http\Requests\Survey\AnswerSurveyRequest;
 use App\Http\Requests\Survey\CreateRespondentTypeRequest;
 use App\Http\Requests\Survey\CreateServiceQuestionRequest;
 use App\Http\Requests\Survey\CreateSurveyRequest;
+use App\Http\Requests\Survey\SolveAnswerRequest;
 use App\Http\Requests\Survey\UpdateQuestionRequest;
 use App\Http\Services\AnswerService;
 use App\Http\Services\EmployeeService;
@@ -112,6 +114,15 @@ class SurveyController extends Controller
             'employeeService.service',
             'answerObservation'
         ]);
+    }
+
+    public function solveAnswer(Answer $answer, SolveAnswerRequest $request)
+    {
+        $requestDto = SolveAnswerRequestDto::fromRequest($request);
+        DB::transaction(function () use ($answer, $requestDto) {
+            $this->answerService->solve($answer, $requestDto);
+        });
+        return response()->noContent();
     }
 
     public function getAnswerObservations(Answer $answer)

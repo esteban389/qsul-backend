@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\DTOs\Auth\UserRole;
 use App\Lib\NanoId;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -38,5 +39,10 @@ class Campus extends Model implements Auditable
     public function users(): HasMany
     {
         return $this->hasMany(User::class);
+    }
+
+    public function campusCoordinator()
+    {
+        return $this->hasMany(User::class)->where('role', UserRole::CampusCoordinator)->first();
     }
 }

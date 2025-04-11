@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
 use OwenIt\Auditing\Auditable as AuditingAuditable;
@@ -21,7 +22,8 @@ class Answer extends Model implements Auditable
         'average',
         'email',
         'respondent_type_id',
-        'answer_observation_id'
+        'answer_observation_id',
+        'solved_at',
     ];
 
     public function employeeService()
@@ -44,7 +46,7 @@ class Answer extends Model implements Auditable
         return $this->hasMany(AnswerQuestion::class);
     }
 
-    public function observations()
+    public function observations(): HasMany
     {
         return $this->hasMany(Observation::class);
     }

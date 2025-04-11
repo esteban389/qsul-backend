@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthenticationController;
 use App\Http\Controllers\Notifications;
 use App\Http\Controllers\SurveyController;
 use App\Http\Controllers\UniversityController;
+use App\Models\Audit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -55,6 +56,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::get('/answers', 'getAnswers');
         Route::get('/answers/{answer}', 'getAnswerById')->withTrashed();
         Route::post('/answers/{answer}/observations', 'addObservation');
+        Route::post('/answers/{answer}/solve', 'solveAnswer');
         Route::post('/answers/{answer}/ignore', 'ignoreAnswer');
         Route::post('/answers/{answer}/restore', 'restoreAnswer')->withTrashed();
         Route::delete('observations/{observation}', 'deleteObservation');
@@ -80,7 +82,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     //Auditing routes
     Route::get('/audits', function () {
-        return App\Models\Audit::latest()->with('author')->get();
+        return Audit::latest()->with('author')->get();
     });
 
     Route::get('/audits/{audit}', function (\OwenIt\Auditing\Models\Audit $audit) {
