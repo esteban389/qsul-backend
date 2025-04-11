@@ -2,19 +2,19 @@
 
 namespace Database\Seeders;
 
-use App\Models\Process;
+use App\Models\Campus;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
-class ProcessTestingSeeder extends Seeder
+class CampusTestingSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        Process::factory()
-            ->count(14)
+        Campus::factory()
+            ->count(4)
             ->create();
     }
 }

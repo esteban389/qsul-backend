@@ -17,15 +17,19 @@ class ServiceFactory extends Factory
      */
     public function definition(): array
     {
+
+        $actions = ['Submit', 'Request', 'Schedule', 'Access', 'Review', 'Approve', 'Track', 'Manage'];
+        $objects = ['Expense Report', 'Support Ticket', 'Meeting Room', 'Legal Advice', 'IT Help', 'Budget Plan', 'Job Application', 'Training Session'];
+
         return [
-            'name' => $this->faker->name,
+            'name' => $this->faker->randomElement($actions) . ' ' . $this->faker->randomElement($objects),
             'icon' => $this->faker->md5(),
         ];
     }
 
     public function withProcess(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'process_id' => Process::query()->inRandomOrder()->value('id'),
         ]);
     }

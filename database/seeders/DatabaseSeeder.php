@@ -30,24 +30,11 @@ class DatabaseSeeder extends Seeder
                 'password' => bcrypt('password'),
                 'role' => 'national_coordinator',
             ]);
-            Campus::factory()->create([
-                'id' => 1,
-                'name' => 'Bogotá',
-                'address' => 'Carrera 1 # 1-1'
-            ]);
-            Campus::factory()->create([
-                'id' => 2,
-                'name' => 'Cúcuta',
-                'address' => 'Calle 1 # 1-1'
-            ]);
             $this->call(ProcessTestingSeeder::class);
-            $processes = Process::all();
-            // Create 6 services for each process
-            foreach ($processes as $process) {
-                Service::factory()->count(6)->create([
-                    'process_id' => $process->id,
-                ]);
-            }
+            $this->call(ServiceTestingSeeder::class);
+            $this->call(CampusTestingSeeder::class);
+            $this->call(UserEmployeeTestingSeeder::class);
+            $this->call(EmployeeServiceTestingSeeder::class);
         }
     }
 }
