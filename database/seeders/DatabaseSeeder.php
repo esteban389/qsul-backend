@@ -23,7 +23,7 @@ class DatabaseSeeder extends Seeder
             $this->call(UserProductionSeeder::class);
             $this->call(ProcessProductionSeeder::class);
         }
-        if (App::environment('local') || App::environment('dev')) {
+        if (App::environment('local') || App::environment('testing')) {
             User::factory()->create([
                 'name' => 'Esteban Andrés Murcia Acuña',
                 'email' => 'estebana.murciaa@gmail.com',
@@ -35,6 +35,8 @@ class DatabaseSeeder extends Seeder
             $this->call(CampusTestingSeeder::class);
             $this->call(UserEmployeeTestingSeeder::class);
             $this->call(EmployeeServiceTestingSeeder::class);
+            $this->call(SurveyTestingSeeder::class);
+            $this->call(AnswerTestingSeeder::class);
         }
     }
 }

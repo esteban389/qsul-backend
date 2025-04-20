@@ -17,7 +17,7 @@ class AnswerFactory extends Factory
     public function definition(): array
     {
         return [
-            'average' => $this->faker->randomFloat(2, 0, 10),
+            'average' => $this->faker->randomFloat(2, 0, 5),
             'email' => $this->faker->email(),
         ];
     }

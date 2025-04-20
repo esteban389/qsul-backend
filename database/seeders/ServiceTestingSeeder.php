@@ -9,6 +9,7 @@ use Illuminate\Database\Seeder;
 
 class ServiceTestingSeeder extends Seeder
 {
+    private int $count = 5;
     /**
      * Run the database seeds.
      */
@@ -16,10 +17,16 @@ class ServiceTestingSeeder extends Seeder
     {
         Process::all()->each(function (Process $process) {
             Service::factory()
-                ->count(5)
+                ->count($this->count)
                 ->create([
                     'process_id' => $process->id,
                 ]);
         });
+    }
+
+    public function setCount(int $count): self
+    {
+        $this->count = $count;
+        return $this;
     }
 }

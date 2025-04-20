@@ -32,7 +32,7 @@ readonly class EmployeeService
             }
         }
         return QueryBuilder::for($query)
-            ->allowedFilters(['name', 'email', 'process.token'])
+            ->allowedFilters(['name', 'email', 'process.token','campus_id'])
             ->allowedSorts(['name', 'email'])
             ->allowedIncludes(['services', 'process'])
             ->get();
