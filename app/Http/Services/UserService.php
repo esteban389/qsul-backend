@@ -5,6 +5,7 @@ namespace App\Http\Services;
 use App\DTOs\Auth\CreateUserDto;
 use App\DTOs\Auth\ForgotPasswordDto;
 use App\DTOs\Auth\ResetPasswordDto;
+use App\DTOs\Auth\UpdateProfileDto;
 use App\DTOs\Auth\UserRole;
 use App\Models\Employee;
 use App\Models\User;
@@ -142,5 +143,41 @@ readonly class UserService
     public function restoreUser(User $user): void
     {
         $user->restore();
+    }
+
+    public function updateProfile(UpdateProfileDto $dto): void
+    {
+        $user = \auth()->user();
+        $hasEmployee = $user->employee()->exists();
+        if ($dto->avatar) {
+            if ($user->avatar) {
+                $this->fileService->deleteAvatar($user->avatar);
+            }
+            $path = $this->fileService->storeAvatar($dto->avatar);
+            $user->update(['avatar' => $path]);
+            if($hasEmployee){
+                $user->employee()->update(['avatar' => $path]);
+            }
+        }
+
+        $user->update([
+            'name' => $dto->name,
+            'email' => $dto->email,
+        ]);
+        if($hasEmployee){
+            $user->employee()->update([
+                'name' => $dto->name,
+                'email' => $dto->email,
+            ]);
+        }
+    }
+
+    public function profileResetPassword(string $password): void
+    {
+        $user = \auth()->user();
+        $user->update([
+            'password' => Hash::make($password),
+        ]);
+        event(new PasswordReset($user));
     }
 }

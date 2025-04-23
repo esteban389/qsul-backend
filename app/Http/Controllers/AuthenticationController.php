@@ -5,10 +5,13 @@ namespace App\Http\Controllers;
 use App\DTOs\Auth\CreateUserDto;
 use App\DTOs\Auth\ForgotPasswordDto;
 use App\DTOs\Auth\ResetPasswordDto;
+use App\DTOs\Auth\UpdateProfileDto;
 use App\Http\Requests\Auth\CreateUserRequest;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
+use App\Http\Requests\Auth\UpdatePasswordRequest;
+use App\Http\Requests\Auth\UpdateProfileRequest;
 use App\Http\Services\EmployeeService;
 use App\Http\Services\UserService;
 use App\Models\User;
@@ -120,5 +123,24 @@ class AuthenticationController extends Controller
             }
         });
         return response()->noContent();
+    }
+
+    public function updateProfile(UpdateProfileRequest $request)
+    {
+        $dto = UpdateProfileDto::fromRequest($request);
+        $this->userService->updateProfile($dto);
+
+        return response()->json([
+            'status' => __('Profile updated successfully'),
+            'user' => auth()->user(),
+        ]);
+    }
+
+    public function updatePassword(UpdatePasswordRequest $request)
+    {
+        $this->userService->profileResetPassword($request->password);
+        return response()->json([
+            'status' => __('Password updated successfully'),
+        ]);
     }
 }

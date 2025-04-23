@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthenticationController;
 use App\Http\Controllers\ChartController;
 use App\Http\Controllers\Notifications;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SurveyController;
 use App\Http\Controllers\UniversityController;
 use App\Models\Audit;
@@ -19,6 +20,8 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::get('/users/{user}', 'getUserById');
         Route::delete('/users/{user}', 'deleteUser');
         Route::patch('/users/{user}', 'restoreUser')->withTrashed();
+        Route::post('/profile', 'updateProfile');
+        Route::post('/profile/password', 'updatePassword');
     });
 
     Route::controller(UniversityController::class)->group(function () {
@@ -66,13 +69,6 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::delete('/respondent-types/{respondentType}', 'deleteRespondentType');
     });
 
-    /*TODO implement profile management routes
-    Route::controller(ProfileController::class)->group(function () {
-        Route::get('/profile', 'getProfile');
-        Route::post('/profile', 'updateProfile');
-        Route::post('/profile/password', 'updatePassword');
-    });
-    */
 
     Route::controller(Notifications::class)->group(function () {
         Route::get('/notifications', 'notifications');
@@ -80,6 +76,17 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('/notifications/read', 'readNotifications');
         Route::post('/notifications/{notification}', 'markAsRead');
     });
+
+
+    Route::post('/chart/perception-group',[ChartController::class,'getPerceptionTrendByGroup']);
+    Route::post('/chart/perception-trend',[ChartController::class,'getPerceptionTrend']);
+    Route::post('/chart/perception-question',[ChartController::class,'getAverageByQuestionAndGroup']);
+    Route::post('/chart/perception',[ChartController::class,'getPerceptionByGroup']);
+    Route::post('/chart/volume',[ChartController::class,'getVolumeByGroup']);
+    Route::post('/chart/volume-trend',[ChartController::class,'getVolumeTrendByGroup']);
+    Route::post('/chart/distribution',[ChartController::class,'getDistributionByGroup']);
+    Route::post('/chart/ranking',[ChartController::class,'getRankingOfGroup']);
+    Route::post('/chart/respondent',[ChartController::class,'getRespondentByGroup']);
 
     //Auditing routes
     Route::get('/audits', function () {
@@ -108,13 +115,3 @@ Route::get('survey', [SurveyController::class, 'getCurrentSurvey']);
 Route::post('/answers', [SurveyController::class, 'createAnswer']);
 
 Route::get('/respondent-types', [SurveyController::class, 'getRespondentTypes']);
-
-Route::post('/chart/perception-group',[ChartController::class,'getPerceptionTrendByGroup']);
-Route::post('/chart/perception-trend',[ChartController::class,'getPerceptionTrend']);
-Route::post('/chart/perception-question',[ChartController::class,'getAverageByQuestionAndGroup']);
-Route::post('/chart/perception',[ChartController::class,'getPerceptionByGroup']);
-Route::post('/chart/volume',[ChartController::class,'getVolumeByGroup']);
-Route::post('/chart/volume-trend',[ChartController::class,'getVolumeTrendByGroup']);
-Route::post('/chart/distribution',[ChartController::class,'getDistributionByGroup']);
-Route::post('/chart/ranking',[ChartController::class,'getRankingOfGroup']);
-Route::post('/chart/respondent',[ChartController::class,'getRespondentByGroup']);
