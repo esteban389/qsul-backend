@@ -30,7 +30,8 @@ class ChartsService
             ->join('campuses as c', 'e.campus_id', '=', 'c.id')
             ->join('services as s', 'em_se.service_id', '=', 's.id')
             ->join('processes as p', 's.process_id', '=', 'p.id')
-            ->join('surveys as sv', 'a.survey_id', '=', 'sv.id');
+            ->join('surveys as sv', 'a.survey_id', '=', 'sv.id')
+                        ->whereNull('a.deleted_at');
     }
 
     /**
@@ -433,7 +434,8 @@ class ChartsService
                 {$group['field']} as id,
                 {$group['label']} as name,
                 {$group['image']} as image,
-                ROUND(AVG(a.average),2) as average_perception
+                ROUND(AVG(a.average),2) as average_perception,
+                COUNT(a.id) as answer_count
             ")
             ->groupByRaw("id, name, image")
             ->whereBetween('a.created_at', [$request->start_date, $request->end_date])
@@ -464,6 +466,7 @@ class ChartsService
                 'name' => $item->name,
                 'image' => $imagePath,
                 'average_perception' => $item->average_perception,
+                'answer_count' => $item->answer_count
             ];
         });
     }

@@ -56,6 +56,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('/survey/questions/services/{service}', 'createServiceQuestion');
         Route::get('/survey/versions', 'getSurveys');
         Route::get('/survey/versions/{survey}', 'getSurveyById');
+        Route::get('/survey/stats', 'getSurveyStats');
 
         Route::get('/answers', 'getAnswers');
         Route::get('/answers/{answer}', 'getAnswerById')->withTrashed();

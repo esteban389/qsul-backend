@@ -33,6 +33,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Http\Request;
 
 class SurveyController extends Controller
 {
@@ -191,5 +192,11 @@ class SurveyController extends Controller
         Gate::authorize('delete', $respondentType);
         $this->respondentService->deleteRespondentType($respondentType);
         return response()->noContent();
+    }
+
+    public function getSurveyStats(Request $request)
+    {
+        $timeFilter = $request->input('time_filter', 'latest');
+        return response()->json($this->surveyService->getSurveyStats($timeFilter));
     }
 }
