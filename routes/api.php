@@ -22,6 +22,10 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::patch('/users/{user}', 'restoreUser')->withTrashed();
         Route::post('/profile', 'updateProfile');
         Route::post('/profile/password', 'updatePassword');
+        Route::post('/profile/request-change', 'requestProfileChange');
+        Route::get('/profile/pending-changes', 'pendingProfileChanges');
+        Route::post('/profile/approve-change/{id}', 'approveProfileChange');
+        Route::get('/profile/my-requests', 'myProfileChangeRequests');
     });
 
     Route::controller(UniversityController::class)->group(function () {
