@@ -10,6 +10,7 @@ use Illuminate\Routing\ResponseFactory;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Symfony\Component\HttpFoundation\Response;
+use App\Providers\TelescopeServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,7 +21,6 @@ class AppServiceProvider extends ServiceProvider
     {
         if ($this->app->environment('local')) {
             //$this->app->register(\Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class);
-            $this->app->register(\Laravel\Telescope\TelescopeServiceProvider::class);
             $this->app->register(TelescopeServiceProvider::class);
         }
     }
