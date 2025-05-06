@@ -31,9 +31,12 @@ class PendingProfileChangeRequested extends Notification implements ShouldQueue
     {
         return [
             'pending_profile_change_id' => $this->pendingChange->id,
-            'type' => $this->pendingChange->change_type,
+            'type' => 'info',
+            'title' => 'Solicitud de Cambio de Perfil',
             'user_id' => $this->pendingChange->user_id,
             'requested_by' => $this->pendingChange->requested_by,
+            'message' => 'Se ha solicitado un cambio de perfil, requiere su atención.',
+            'date' => $this->pendingChange->created_at
         ];
     }
 }

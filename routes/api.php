@@ -45,6 +45,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::patch('/services/{service}', 'restoreService')->withTrashed();
 
         Route::post('/employees', 'createEmployee');
+        Route::get('/employees/id/{employee}', 'getEmployeeById');
         Route::post('/employees/{employee}', 'updateEmployee')->withTrashed();
         Route::delete('/employees/{employee}', 'deleteEmployee');
         Route::patch('/employees/{employee}', 'restoreEmployee')->withTrashed();

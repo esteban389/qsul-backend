@@ -212,7 +212,9 @@ class UniversityController extends Controller
         if (Auth::check()) {
             $employee->load('user');
         }
-        $employee->url = $employee->campus->token . "/" . $employee->process->token . "/" . $employee->token;
+        if($employee->campus && $employee->process && $employee->token) {
+            $employee->url = $employee->campus->token . "/" . $employee->process->token . "/" . $employee->token;
+        }
         return response()->json($employee);
     }
 

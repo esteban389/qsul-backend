@@ -166,17 +166,38 @@ class AuthenticationController extends Controller
     public function pendingProfileChanges(\Illuminate\Http\Request $request): \Illuminate\Http\JsonResponse
     {
         $user = $request->user();
+        $status = $request->query('status', 'pending'); // default to 'pending'
+        $dateRange = $request->query('date_range', null); // e.g. '7days', '3months', etc.
+
         if ($user->hasRole(UserRole::NationalCoordinator)) {
-            $changes = PendingProfileChange::where('change_type', 'campus')->where('status', 'pending')->get();
+            $query = PendingProfileChange::with(['user', 'requester', 'approver'])
+                ->where('change_type', 'campus');
         } elseif ($user->hasRole(UserRole::CampusCoordinator)) {
-            $changes = PendingProfileChange::whereIn('change_type', ['process','services'])
-                ->where('status', 'pending')
+            $query = PendingProfileChange::with(['user', 'requester', 'approver'])
+                ->whereIn('change_type', ['process','services'])
                 ->whereHas('user', function($q) use ($user) {
                     $q->where('campus_id', $user->campus_id);
-                })->get();
+                });
         } else {
             return response()->json(['error' => 'Forbidden'], 403);
         }
+
+        // Status filter
+        if ($status !== 'all') {
+            $query->where('status', $status);
+        }
+
+        // Date range filter
+        if ($dateRange) {
+            $now = \Carbon\Carbon::now();
+            if (preg_match('/^(\d+)days$/', $dateRange, $matches)) {
+                $query->where('created_at', '>=', $now->copy()->subDays((int)$matches[1]));
+            } elseif (preg_match('/^(\d+)months$/', $dateRange, $matches)) {
+                $query->where('created_at', '>=', $now->copy()->subMonths((int)$matches[1]));
+            }
+        }
+
+        $changes = $query->get();
         return response()->json($changes);
     }
 
@@ -186,7 +207,7 @@ class AuthenticationController extends Controller
     public function approveProfileChange(\Illuminate\Http\Request $request, $id): \Illuminate\Http\JsonResponse
     {
         $pending = PendingProfileChange::findOrFail($id);
-        $this->authorize('approve', $pending);
+        Gate::authorize('approve', $pending);
         $user = $request->user();
         // Approve or reject
         $action = $request->input('action'); // 'approve' or 'reject'

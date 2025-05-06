@@ -14,7 +14,7 @@ class PendingProfileChangeDto
     public static function fromRequest($request): self
     {
         return new self(
-            user_id: $request->user_id,
+            user_id: $request->user()->id,
             change_type: $request->change_type,
             new_value: $request->new_value,
             requested_by: $request->user()->id
