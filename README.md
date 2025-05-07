@@ -1,6 +1,6 @@
 # QSUL Backend – Laravel
 
-Este repositorio contiene el backend de la aplicación QSUL, desarrollado en Laravel. Puede ser ejecutado en un entorno con Docker (recomendado para producción) o en un entorno local tradicional (recomendado para desarrollo).
+Este repositorio contiene el backend de la aplicación QSUL (Quality System Universidad Libre), desarrollado en Laravel. Puede ser ejecutado en un entorno con Docker (recomendado para producción) o en un entorno local tradicional (recomendado para desarrollo).
 
 ---
 
