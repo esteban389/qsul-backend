@@ -18,7 +18,7 @@ RUN rm -rf vendor && \
     chmod -R 775 bootstrap/cache && \
     composer install --no-dev --optimize-autoloader --prefer-dist --no-interaction
 
-RUN chown -R www-data:www-data /var/www/html && \
+RUN chown -R www-data:www-data . && \
     chmod -R 775 bootstrap/cache
 
 # Going back to www-data user
