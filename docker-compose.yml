@@ -23,25 +23,27 @@ services:
 
     # Task Worker
     task:
-        build: .
-        command: ["php", "/var/www/html/artisan", "schedule:work"]
+        build: 
+            context: .
+            dockerfile: Dockerfile-cli
+        command: ["php", "artisan", "schedule:work"]
         environment:
             PHP_OPCACHE_ENABLE: 1
         env_file:
           - .env
-        working_dir: /var/www/html
         stop_signal: SIGTERM
         restart: unless-stopped
 
     # Queue Worker
     worker:
-        build: .
+        build: 
+            context: .
+            dockerfile: Dockerfile-cli
         environment:
             PHP_OPCACHE_ENABLE: 1
         env_file:
           - .env
-        working_dir: /var/www/html
-        command: ["php", "/var/www/html/artisan", "queue:work"]
+        command: ["php", "artisan", "queue:work"]
         depends_on:
             mysql:
                 condition: service_healthy
