@@ -214,23 +214,80 @@ class AuthenticationController extends Controller
         if ($action === 'approve') {
             // Apply the change
             $targetUser = $pending->user;
+            
+            // Handle the case where new_value might be a JSON string
+            $newValue = is_string($pending->new_value) ? json_decode($pending->new_value, true) : $pending->new_value;
+            
             if ($pending->change_type === 'campus') {
-                $targetUser->campus_id = $pending->new_value['campus_id'];
+                $targetUser->campus_id = $newValue['campus_id'];
                 $targetUser->save();
                 if ($targetUser->employee) {
-                    $targetUser->employee->campus_id = $pending->new_value['campus_id'];
+                    $targetUser->employee->campus_id = $newValue['campus_id'];
                     $targetUser->employee->save();
                 }
             } elseif ($pending->change_type === 'process') {
                 if ($targetUser->employee) {
-                    $targetUser->employee->process_id = $pending->new_value['process_id'];
-                    $targetUser->employee->save();
+                    // Use the new method to update process and remove services
+                    $this->employeeService->updateEmployeeProcess($targetUser->employee, $newValue['process_id']);
                 }
             } elseif ($pending->change_type === 'services') {
                 if ($targetUser->employee) {
-                    $targetUser->employee->services()->sync($pending->new_value['services']);
+                    $requestedServiceIds = $newValue['services'];
+                    
+                    // Use a transaction to ensure data integrity
+                    DB::beginTransaction();
+                    try {
+                        // Get current service IDs
+                        $currentServiceIds = $targetUser->employee->services()->pluck('services.id')->toArray();
+                        
+                        // Find services to add (in requested but not in current)
+                        $servicesToAdd = array_diff($requestedServiceIds, $currentServiceIds);
+                        
+                        // Find services to remove (in current but not in requested)
+                        $servicesToRemove = array_diff($currentServiceIds, $requestedServiceIds);
+                        
+                        // Add new services
+                        if (!empty($servicesToAdd)) {
+                            $targetUser->employee->services()->attach($servicesToAdd);
+                        }
+                        
+                        // Soft delete services to remove by updating the pivot table
+                        if (!empty($servicesToRemove)) {
+                            // Instead of detaching (which does hard delete), we'll manually soft delete
+                            $employeeId = $targetUser->employee->id;
+                            
+                            // Find the pivot records to soft delete
+                            $pivotRecordsToDelete = DB::table('employee_service')
+                                ->where('employee_id', $employeeId)
+                                ->whereIn('service_id', $servicesToRemove)
+                                ->whereNull('deleted_at')
+                                ->get(['id']);
+                            // Soft delete each record by updating the deleted_at column
+                            foreach ($pivotRecordsToDelete as $record) {
+                                DB::table('employee_service')
+                                    ->where('id', $record->id)
+                                    ->update(['deleted_at' => now()]);
+                            }
+                        }
+                        
+                        DB::commit();
+                        
+                        // Log for debugging purposes
+                        \Log::info('Profile change - services', [
+                            'employee_id' => $targetUser->employee->id,
+                            'requested_services' => $requestedServiceIds,
+                            'services_to_add' => $servicesToAdd,
+                            'services_to_soft_delete' => $servicesToRemove,
+                            'final_services' => $targetUser->employee->services()->pluck('services.id')->toArray()
+                        ]);
+                    } catch (\Exception $e) {
+                        DB::rollBack();
+                        \Log::error('Error updating employee services: ' . $e->getMessage());
+                        throw $e;
+                    }
                 }
             }
+            
             $pending->status = 'approved';
             $pending->approved_by = $user->id;
             $pending->approved_at = now();

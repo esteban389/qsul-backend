@@ -126,21 +126,80 @@ readonly class EmployeeService
 
     public function addServiceToEmployee(Employee $employee, mixed $serviceId): void
     {
-        if ($employee->services()->where('service_id', $serviceId)->exists()) {
+        // Check if the service exists for this employee (including soft-deleted ones)
+        $existingPivot = EmployeeServiceModel::withTrashed()
+            ->where('employee_id', $employee->id)
+            ->where('service_id', $serviceId)
+            ->first();
+            
+        if ($existingPivot) {
+            if ($existingPivot->trashed()) {
+                // If it exists but is soft-deleted, restore it
+                $existingPivot->restore();
+            }
+            // If it exists and is not deleted, do nothing
             return;
         }
+        
+        // If it doesn't exist at all, attach it
         $employee->services()->attach($serviceId);
     }
 
     public function removeServiceToEmployee(Employee $employee, Service $service): void
     {
-        $employee->services()->detach($service);
+        // Find the pivot record and soft delete it
+        $pivot = EmployeeServiceModel::where('employee_id', $employee->id)
+            ->where('service_id', $service->id)
+            ->first();
+            
+        if ($pivot) {
+            $pivot->delete(); // This will soft delete since the model uses SoftDeletes
+        }
+    }
+    
+    /**
+     * Remove all services from an employee (soft delete)
+     */
+    public function removeAllServicesFromEmployee(Employee $employee): void
+    {
+        // Get all active pivot records for this employee
+        $pivots = EmployeeServiceModel::where('employee_id', $employee->id)->get();
+        
+        // Soft delete each one
+        foreach ($pivots as $pivot) {
+            $pivot->delete(); // This will soft delete since the model uses SoftDeletes
+        }
+    }
+    
+    /**
+     * Update employee process and remove all services
+     * Since services are associated with processes, changing the process requires removing all services
+     */
+    public function updateEmployeeProcess(Employee $employee, int $processId): void
+    {
+        // Start a transaction to ensure data integrity
+        \DB::beginTransaction();
+        
+        try {
+            // Update the process ID
+            $employee->process_id = $processId;
+            $employee->save();
+            
+            // Remove all services (soft delete)
+            $this->removeAllServicesFromEmployee($employee);
+            
+            \DB::commit();
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            throw $e;
+        }
     }
 
     public function getEmployeeByEmployeeServiceId(int $employeeServiceId): Employee
     {
-        //Query the employee that by checking the employeeServices intermediate relationship table that connects with Services has the employeeServiceId
-        return EmployeeServiceModel::query()
+        // Query the employee by checking the employeeServices intermediate relationship table
+        // Include soft-deleted records since they might be referenced by answers
+        return EmployeeServiceModel::withTrashed()
             ->where('id', $employeeServiceId)
             ->firstOrFail()
             ->employee;

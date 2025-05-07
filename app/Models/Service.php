@@ -29,7 +29,9 @@ class Service extends Model implements Auditable
 
     public function employees(): BelongsToMany
     {
-        return $this->belongsToMany(Employee::class);
+        return $this->belongsToMany(Employee::class)
+            ->using(EmployeeService::class)
+            ->wherePivotNull('deleted_at');
     }
 
     public function questions(): HasMany

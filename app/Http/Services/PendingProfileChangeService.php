@@ -12,10 +12,15 @@ class PendingProfileChangeService
 {
     public function createPendingChange(PendingProfileChangeDto $dto): PendingProfileChange
     {
+        $json = match($dto->change_type){
+            'campus' => json_encode(['campus_id'=>$dto->new_value[0]]),
+            'process' => json_encode(['process_id'=>$dto->new_value[0]]),
+            'services' => json_encode(['services'=>$dto->new_value]),
+        };
         $pending = PendingProfileChange::create([
             'user_id' => $dto->user_id,
             'change_type' => $dto->change_type,
-            'new_value' => $dto->new_value,
+            'new_value' => $json,
             'status' => 'pending',
             'requested_by' => $dto->requested_by,
             'requested_at' => now(),

@@ -41,7 +41,9 @@ class Employee extends Model implements Auditable
 
     public function services(): BelongsToMany
     {
-        return $this->belongsToMany(Service::class);
+        return $this->belongsToMany(Service::class)
+            ->using(EmployeeService::class)
+            ->wherePivotNull('deleted_at');
     }
 
     protected static function boot(): void
