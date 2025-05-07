@@ -15,8 +15,6 @@ USER root
 COPY --chmod=755 ./entrypoint.d/ /etc/entrypoint.d/
 
 RUN rm -rf vendor && \
-    apt-get update && apt-get install -y git \
-    && rm -rf /var/lib/apt/lists/* && \
     mkdir -p bootstrap/cache && \
     chown -R www-data:www-data bootstrap && \
     chmod -R 775 bootstrap/cache && \
