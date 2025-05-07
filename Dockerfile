@@ -5,11 +5,18 @@ WORKDIR /var/www/html
 
 # Copy composer files and install optimized dependencies
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --optimize-autoloader --prefer-dist --no-interaction
+USER root
+RUN mkdir -p bootstrap/cache && \
+    chown -R www-data:www-data bootstrap && \
+    chmod -R 775 bootstrap/cache && \
+    composer install --no-dev --optimize-autoloader --prefer-dist --no-interaction
 
 # Copy rest of the application
 COPY . .
+RUN chown -R www-data:www-data /var/www/html && \
+    chmod -R 775 bootstrap/cache
 
+USER www-data
 EXPOSE 8080
 
 

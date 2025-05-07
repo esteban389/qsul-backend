@@ -3,10 +3,11 @@ services:
     web:
         build: .
         ports:
-            - "8080:8080"
+            - 80:8080
+            - 443:8443
         environment:
             PHP_OPCACHE_ENABLE: 1
-            AUTORUN_ENABLE: true
+            AUTORUN_ENABLED: true
             SSL_MODE: "mixed"
         env_file:
           - .env
@@ -18,34 +19,28 @@ services:
         networks:
             - laravel-network
         restart: unless-stopped
-        command: php artisan migrate --force --seed
 
     # Task Worker
     task:
-        image: ghcr.io/serversideup/php:8.3-cli
+        build: .
+        command: ["php", "/var/www/html/artisan", "schedule:work"]
         environment:
             PHP_OPCACHE_ENABLE: 1
         env_file:
           - .env
         working_dir: /var/www/html
-        volumes:
-            - .:/var/www/html
         stop_signal: SIGTERM
-        healthcheck:
-          test: ["CMD", "healthcheck-schedule"]
-          start_period: 10s
+        restart: unless-stopped
 
     # Queue Worker
     worker:
-        image: ghcr.io/serversideup/php:8.3-cli
+        build: .
         environment:
             PHP_OPCACHE_ENABLE: 1
         env_file:
           - .env
         working_dir: /var/www/html
-        volumes:
-            - .:/var/www/html
-        command: php artisan queue:work --tries=3
+        command: ["php", "/var/www/html/artisan", "queue:work"]
         depends_on:
             mysql:
                 condition: service_healthy

@@ -9,3 +9,5 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote')->hourly();
 
 Schedule::command('telescope:prune --hours=168')->weekly()->fridays()->at('00:00');
+
+Schedule::command('inspire')->everyMinute();
