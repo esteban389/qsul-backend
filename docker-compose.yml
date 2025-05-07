@@ -1,5 +1,6 @@
 services:
     # Web Server (HTTP)
+    # For more on SSL configuratoin: https://serversideup.net/open-source/docker-php/docs/customizing-the-image/configuring-ssl
     web:
         build: .
         ports:
