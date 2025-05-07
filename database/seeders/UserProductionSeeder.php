@@ -12,11 +12,13 @@ class UserProductionSeeder extends Seeder
      */
     public function run(): void
     {
-        User::query()->create([
-            'name' => env('NATIONAL_COORDINATOR_NAME'),
-            'email' => env('NATIONAL_COORDINATOR_EMAIL'),
-            'password' => bcrypt(env('NATIONAL_COORDINATOR_PASSWORD')),
-            'role'=> 'national_coordinator',
-        ]);
+        User::query()->firstOrCreate(
+                ['email' => env('NATIONAL_COORDINATOR_EMAIL')], // unique field
+                [
+                    'name' => env('NATIONAL_COORDINATOR_NAME'),
+                    'password' => bcrypt(env('NATIONAL_COORDINATOR_PASSWORD')),
+                    'role' => 'national_coordinator',
+                ]
+            );
     }
 }
