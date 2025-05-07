@@ -13,7 +13,7 @@ class SurveyProductionSeeder extends Seeder
      */
     public function run(): void
     {
-        Survey::factory()->create([
+        Survey::query()->create([
             'version' => 0,
         ]);
     }

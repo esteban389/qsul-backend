@@ -6,6 +6,9 @@ WORKDIR /var/www/html
 # Copy composer files and install optimized dependencies
 COPY composer.json composer.lock ./
 USER root
+
+COPY --chmod=755 ./entrypoint.d/ /etc/entrypoint.d/
+
 RUN mkdir -p bootstrap/cache && \
     chown -R www-data:www-data bootstrap && \
     chmod -R 775 bootstrap/cache && \
