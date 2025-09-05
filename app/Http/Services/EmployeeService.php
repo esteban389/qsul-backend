@@ -30,6 +30,9 @@ readonly class EmployeeService
             if (Auth::user()->hasRole(UserRole::CampusCoordinator)) {
                 $query = $query->where('campus_id', Auth::user()->campus_id);
             }
+            if (Auth::user()->hasRole(UserRole::ProcessLeader)) {
+                $query = $query->where('process_id', Auth::user()->employee()->first()->process_id);
+            }
         }
         return QueryBuilder::for($query)
             ->allowedFilters(['name', 'email', 'process.token','campus_id'])
