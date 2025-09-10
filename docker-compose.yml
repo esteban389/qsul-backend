@@ -1,0 +1,58 @@
+services:
+    # Web Server (HTTP)
+    # For more on SSL configuratoin: https://serversideup.net/open-source/docker-php/docs/customizing-the-image/configuring-ssl
+    web:
+        build: .
+        ports:
+            - 8000:8080
+            - 443:8443
+        environment:
+            PHP_OPCACHE_ENABLE: 1
+            AUTORUN_ENABLED: true
+            SSL_MODE: "mixed"
+        env_file:
+          - .env
+        volumes:
+            - ./storage:/var/www/html/storage
+        networks:
+            - laravel-network
+        restart: unless-stopped
+
+    # Task Worker
+    task:
+        build: 
+            context: .
+            dockerfile: Dockerfile-cli
+        command: ["php", "artisan", "schedule:work"]
+        environment:
+            PHP_OPCACHE_ENABLE: 1
+        env_file:
+          - .env
+        stop_signal: SIGTERM
+        restart: unless-stopped
+
+    # Queue Worker
+    worker:
+        build: 
+            context: .
+            dockerfile: Dockerfile-cli
+        environment:
+            PHP_OPCACHE_ENABLE: 1
+        env_file:
+          - .env
+        command: ["php", "artisan", "queue:work"]
+        networks:
+            - laravel-network
+        restart: unless-stopped
+        stop_signal: SIGTERM
+        healthcheck:
+            test: ["CMD", "healthcheck-queue"]
+            start_period: 10s
+
+
+# Define the custom network
+networks:
+    laravel-network:
+        driver: bridge
+volumes:
+    mysql_data:

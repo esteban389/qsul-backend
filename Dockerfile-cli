@@ -1,0 +1,30 @@
+# Base image with PHP, Composer, and NGINX
+FROM ghcr.io/serversideup/php:8.3-cli-alpine
+
+WORKDIR .
+
+# Copy composer files and install optimized dependencies
+COPY composer.json composer.lock ./
+
+# Copy rest of the application
+COPY . .
+
+# Fix ownership and permissions AFTER copying the full app
+USER root
+
+RUN rm -rf vendor && \
+    mkdir -p bootstrap/cache && \
+    chown -R www-data:www-data bootstrap && \
+    chmod -R 775 bootstrap/cache && \
+    composer install --no-dev --optimize-autoloader --prefer-dist --no-interaction
+
+RUN chown -R www-data:www-data . && \
+    chmod -R 775 bootstrap/cache
+
+# Going back to www-data user
+USER www-data
+
+#Expose port
+EXPOSE 8080
+
+
