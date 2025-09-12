@@ -24,11 +24,8 @@ readonly class ServiceService
             if (Auth::user()->hasRole(UserRole::NationalCoordinator)) {
                 $query = Service::withTrashed();
             }
-            if (Auth::user()->hasRole(UserRole::CampusCoordinator)) {
-                $query = $query->where('process.campus_id', Auth::user()->campus_id);
-            }
             if (Auth::user()->hasRole(UserRole::ProcessLeader)) {
-                $query = $query->where('process.campus_id', Auth::user()->campus_id)->where('process_id', Auth::user()->employee()->first()->process_id);
+                $query = $query->where('process_id', Auth::user()->employee()->first()->process_id);
             }
         }
 
