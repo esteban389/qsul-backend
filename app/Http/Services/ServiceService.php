@@ -13,27 +13,37 @@ use Spatie\QueryBuilder\QueryBuilder;
 
 readonly class ServiceService
 {
-
     public function __construct(
         public FileService $fileService
-    )
-    {
-    }
+    ) {}
 
     public function getServices(): Collection
     {
         $query = Service::query();
-        if (Auth::check() && Auth::user()->hasRole(UserRole::NationalCoordinator)) {
-            $query = Service::withTrashed();
+        if (Auth::check()) {
+            if (Auth::user()->hasRole(UserRole::NationalCoordinator)) {
+                $query = Service::withTrashed();
+            }
+            if (Auth::user()->hasRole(UserRole::CampusCoordinator)) {
+                $query = $query->where('process.campus_id', Auth::user()->campus_id);
+            }
+            if (Auth::user()->hasRole(UserRole::ProcessLeader)) {
+                $query = $query->where('process.campus_id', Auth::user()->campus_id)->where('process_id', Auth::user()->employee()->first()->process_id);
+            }
         }
+
         return QueryBuilder::for($query)
-            ->allowedFilters(['name','process_id', AllowedFilter::callback('deleted_at', function ($query, $value) {
-                if ($value === 'null') {
-                    $query->whereNull('deleted_at');
-                } elseif ($value === 'not_null') {
-                    $query->whereNotNull('deleted_at');
-                }
-            }),])
+            ->allowedFilters([
+                'name',
+                'process_id',
+                AllowedFilter::callback('deleted_at', function ($query, $value) {
+                    if ($value === 'null') {
+                        $query->whereNull('deleted_at');
+                    } elseif ($value === 'not_null') {
+                        $query->whereNotNull('deleted_at');
+                    }
+                }),
+            ])
             ->allowedIncludes(['process'])
             ->allowedSorts(['name'])
             ->get();
