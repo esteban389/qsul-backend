@@ -311,5 +311,22 @@ class AuthenticationController extends Controller
         $requests = PendingProfileChange::where('user_id', $user->id)->get();
         return response()->json($requests);
     }
+
+    public function getOfficeUrl(\Illuminate\Http\Request $request): \Illuminate\Http\JsonResponse
+    {
+        $user = $request->user();
+        switch($user->role) {
+            case UserRole::CampusCoordinator:
+                $url = env('FRONTEND_URL') . '/encuesta/' . $user->campus->token;
+                break;
+            case UserRole::ProcessLeader:
+                $url = env('FRONTEND_URL') . '/encuesta/' . $user->campus->token . "/" . $user->employee->process->token;
+                break;
+            default:
+                throw new \Exception('User role not found');
+        }
+
+        return response()->json(['url' => $url]);
+    }
 }
 

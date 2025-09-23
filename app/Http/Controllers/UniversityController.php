@@ -10,6 +10,7 @@ use App\DTOs\University\UpdateCampusRequestDto;
 use App\DTOs\University\UpdateEmployeeRequestDto;
 use App\DTOs\University\UpdateProcessRequestDto;
 use App\DTOs\University\UpdateServiceRequestDto;
+use App\DTOs\Auth\UserRole;
 use App\Http\Requests\University\AddServiceToEmployeeRequest;
 use App\Http\Requests\University\CreateCampusRequest;
 use App\Http\Requests\University\CreateEmployeeRequest;
@@ -287,6 +288,16 @@ class UniversityController extends Controller
     {
         $url = env('FRONTEND_URL') . '/encuesta/' . $employee->campus->token . "/" . $employee->process->token . "/" . $employee->token;
 
+        return response()->json(['url'=>$url]);
+    }
+
+    public function getProcessUrl(Process $process): JsonResponse
+    {
+        $user = Auth::user();
+        $url = '';
+        if($user->role === UserRole::CampusCoordinator) {
+            $url = env('FRONTEND_URL') . '/encuesta/' . $user->campus->token . "/" . $process->token;
+        }
         return response()->json(['url'=>$url]);
     }
 }

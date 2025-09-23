@@ -26,6 +26,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::get('/profile/pending-changes', 'pendingProfileChanges');
         Route::post('/profile/approve-change/{id}', 'approveProfileChange');
         Route::get('/profile/my-requests', 'myProfileChangeRequests');
+        Route::get('/profile/office-url', 'getOfficeUrl');
     });
 
     Route::controller(UniversityController::class)->group(function () {
@@ -38,6 +39,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('/processes/{process}', 'updateProcess')->withTrashed();
         Route::delete('/processes/{process}', 'deleteProcess');
         Route::patch('/processes/{process}', 'restoreProcess')->withTrashed();
+        Route::get('/processes/{process}/url','getProcessUrl');
 
         Route::post('/services', 'createService');
         Route::post('/services/{service}', 'updateService')->withTrashed();
