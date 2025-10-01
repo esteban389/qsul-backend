@@ -29,9 +29,15 @@ readonly class AnswerService
         $query = Answer::withTrashed()->with([
             'respondentType',
             'survey',
-            'employeeService',
-            'employeeService.employee',
-            'employeeService.service',
+            'employeeService' => function ($query) {
+                $query->withTrashed();
+            },
+            'employeeService.employee' => function ($query) {
+                $query->withTrashed();
+            },
+            'employeeService.service' => function ($query) {
+                $query->withTrashed();
+            },
         ])->join('surveys', 'answers.survey_id', '=', 'surveys.id')
             ->select('answers.*')
             ->orderBy('answers.created_at', 'desc')
