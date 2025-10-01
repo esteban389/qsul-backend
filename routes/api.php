@@ -9,6 +9,7 @@ use App\Http\Controllers\UniversityController;
 use App\Models\Audit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\DTOs\Auth\UserRole;
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('/user', function (Request $request) {
