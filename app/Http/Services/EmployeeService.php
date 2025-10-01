@@ -32,6 +32,7 @@ readonly class EmployeeService
             }
 	     if (Auth::user()->hasRole(UserRole::ProcessLeader)) {
                 $query = $query->where('process_id', Auth::user()->employee()->first()->process_id);
+                $query = $query->where('campus_id', Auth::user()->campus_id);
             }
         }
         return QueryBuilder::for($query)
