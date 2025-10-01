@@ -110,9 +110,15 @@ class SurveyController extends Controller
             'answerQuestions.question',
             'respondentType',
             'survey',
-            'employeeService',
-            'employeeService.employee',
-            'employeeService.service',
+            'employeeService' => function ($query) {
+                $query->withTrashed();
+            },
+            'employeeService.employee' => function ($query) {
+                $query->withTrashed();
+            },
+            'employeeService.service' => function ($query) {
+                $query->withTrashed();
+            },
             'answerObservation'
         ]);
     }
