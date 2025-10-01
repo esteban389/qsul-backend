@@ -36,7 +36,7 @@ class AuthenticationController extends Controller
     {
     }
 
-    public function Login(LoginRequest $request): Response
+    public function Login(LoginRequest $request): Response | JsonResponse
     {
         $request->authenticate();
 
