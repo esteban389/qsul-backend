@@ -12,7 +12,15 @@ use Illuminate\Support\Facades\Route;
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('/user', function (Request $request) {
-        return $request->user();
+        $user = $request->user();
+        //Return error if the user account is not fully setup
+        if($user->role === UserRole::CampusCoordinator && $user->campus_id === null) {
+            return response()->json(['error' => 'Tu cuenta no está completamente configurada', 'message' => 'Tienes el rol de coordinador seccional pero no se te ha asignado una seccional.'], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+        if($user->role === UserRole::ProcessLeader && ($user->employee_id === null || $user->campus_id === null || $user->employee()->first()->process_id === null)) {
+            return response()->json(['error' => 'Tu cuenta no está completamente configurada', 'message' => 'Tienes el rol de líder de proceso pero no se te ha asignado un proceso o seccional.'], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+        return $user;
     });
 
     Route::controller(AuthenticationController::class)->group(function () {
