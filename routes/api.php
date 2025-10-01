@@ -8,22 +8,11 @@ use App\Http\Controllers\SurveyController;
 use App\Http\Controllers\UniversityController;
 use App\Models\Audit;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Route;
-use App\DTOs\Auth\UserRole;
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
-    Route::get('/user', function (Request $request, AuthenticationController $authenticationController) {
+    Route::get('/user', function (Request $request) {
         $user = $request->user();
-        //Return error if the user account is not fully setup
-        if($user->role === UserRole::CampusCoordinator && $user->campus_id === null) {
-            $authenticationController->logout($request);
-            return response()->json(['error' => 'Tu cuenta no está completamente configurada', 'message' => 'Tienes el rol de coordinador seccional pero no se te ha asignado una seccional.'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-        if($user->role === UserRole::ProcessLeader && ($user->employee_id === null || $user->campus_id === null || $user->employee()->first()?->process_id === null)) {
-            $authenticationController->logout($request);
-            return response()->json(['error' => 'Tu cuenta no está completamente configurada', 'message' => 'Tienes el rol de líder de proceso pero no se te ha asignado un proceso o seccional.'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
         return $user;
     });
 

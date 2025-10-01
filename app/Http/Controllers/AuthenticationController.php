@@ -42,6 +42,17 @@ class AuthenticationController extends Controller
 
         $request->session()->regenerate();
 
+                //Return error if the user account is not fully setup
+        if($request->user()->role === UserRole::CampusCoordinator && $request->user()->campus_id === null) {
+            $this->logout($request);
+            return response()->json(['error' => 'Tu cuenta no está completamente configurada', 'message' => 'Tienes el rol de coordinador seccional pero no se te ha asignado una seccional.'], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        if($request->user()->role === UserRole::ProcessLeader && ($request->user()->employee_id === null || $request->user()->campus_id === null || $request->user()->employee()->first()?->process_id === null)) {
+            $this->logout($request);
+            return response()->json(['error' => 'Tu cuenta no está completamente configurada', 'message' => 'Tienes el rol de líder de proceso pero no se te ha asignado un proceso o seccional.'], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
         if (!$request->user()->hasVerifiedEmail()) {
             if ($request->user()->markEmailAsVerified()) {
                 event(new Verified($request->user()));
