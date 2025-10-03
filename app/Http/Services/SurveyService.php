@@ -32,6 +32,19 @@ readonly class SurveyService
         $currentSurvey = $this->getCurrentSurvey();
 
         $query->where('survey_id', $currentSurvey->id);
+        
+        if(Auth::user()->hasRole(UserRole::CampusCoordinator)) {
+            $query->whereHas('employeeService.employee', function ($query) use ($user) {
+                $query->where('campus_id', $user->campus_id);
+            });
+        }
+
+        if(Auth::user()->hasRole(UserRole::ProcessLeader)) {
+            $query->whereHas('employeeService.employee', function ($query) use ($user) {
+                $query->where('process_id', $user->employee()->first()->process_id);
+                $query->where('campus_id', $user->campus_id);
+            });
+        }
 
         if ($timeFilter === 'month') {
             $query->where('created_at', '>=', now()->subMonth());
