@@ -78,9 +78,6 @@ readonly class EmployeeService
             UserRole::CampusCoordinator => $requestDto->process_id,
             UserRole::ProcessLeader => Auth::user()->employee()->first()->process_id,
         };
-        if (isset($requestDto->process_id) && Auth::user()->role === UserRole::ProcessLeader) {
-            throw new AuthorizationException();
-        }
         $path = $this->fileService->storeAvatar($requestDto->avatar);
         Employee::query()->create([
             'name' => $requestDto->name,
