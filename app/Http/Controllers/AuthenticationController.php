@@ -123,8 +123,8 @@ class AuthenticationController extends Controller
         Gate::authorize('delete',$user);
         DB::transaction(function () use ($user, $request) {
             $this->userService->deleteUser($user);
-            if($request->exists('employee')){
-                $this->employeeService->deleteEmployee($user->employee);
+            if($user->employee()->withTrashed()->exists()){
+                $this->employeeService->deleteEmployee($user->employee()->withTrashed()->first());
             }
         });
         return response()->noContent();

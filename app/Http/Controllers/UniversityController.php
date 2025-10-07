@@ -265,7 +265,7 @@ class UniversityController extends Controller
         Gate::authorize('delete', $employee);
         DB::transaction(function () use ($employee) {
             $this->employeeService->deleteEmployee($employee);
-            if ($employee->user()->exists()) {
+            if ($employee->user()->withTrashed()->exists()) {
                 $this->userService->deleteUser($employee->user);
             }
         });
