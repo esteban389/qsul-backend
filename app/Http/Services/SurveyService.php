@@ -7,6 +7,7 @@ use App\Models\Survey;
 use Illuminate\Database\Eloquent\Collection;
 use App\Models\Answer;
 use Illuminate\Support\Facades\Auth;
+use App\DTOs\Auth\UserRole;
 
 readonly class SurveyService
 {
