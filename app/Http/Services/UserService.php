@@ -148,7 +148,7 @@ readonly class UserService
     public function updateProfile(UpdateProfileDto $dto): void
     {
         $user = \auth()->user();
-        $hasEmployee = $user->employee()->exists();
+        $hasEmployee = $user->employee()->withTrashed()->exists();
         if ($dto->avatar) {
             if ($user->avatar) {
                 $this->fileService->deleteAvatar($user->avatar);
