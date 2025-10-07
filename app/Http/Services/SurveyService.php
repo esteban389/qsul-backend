@@ -34,6 +34,8 @@ readonly class SurveyService
         $currentSurvey = $this->getCurrentSurvey();
 
         $query->where('survey_id', $currentSurvey->id);
+
+        $user = Auth::user();
         
         if(Auth::user()->hasRole(UserRole::CampusCoordinator)) {
             $query->whereHas('employeeService.employee', function ($query) use ($user) {
