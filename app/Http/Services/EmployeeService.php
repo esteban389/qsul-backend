@@ -116,7 +116,7 @@ readonly class EmployeeService
 
         $employee->update($data);
         if($hasUser){
-            $employee->user()->update($data);
+            $employee->user()->withTrashed()->update($data);
         }
     }
 

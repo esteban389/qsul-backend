@@ -156,7 +156,7 @@ readonly class UserService
             $path = $this->fileService->storeAvatar($dto->avatar);
             $user->update(['avatar' => $path]);
             if($hasEmployee){
-                $user->employee()->update(['avatar' => $path]);
+                $user->employee()->withTrashed()->update(['avatar' => $path]);
             }
         }
 
@@ -165,7 +165,7 @@ readonly class UserService
             'email' => $dto->email,
         ]);
         if($hasEmployee){
-            $user->employee()->update([
+            $user->employee()->withTrashed()->update([
                 'name' => $dto->name,
                 'email' => $dto->email,
             ]);
