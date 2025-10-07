@@ -135,7 +135,7 @@ class AuthenticationController extends Controller
         Gate::authorize('restore',$user);
         DB::transaction(function () use ($user, $request) {
             $this->userService->restoreUser($user);
-            if($request->exists('employee') && $user->employee()->withTrashed()->exists()){
+            if($user->employee()->withTrashed()->exists()){
                 $this->employeeService->restoreEmployee($user->employee()->withTrashed()->first());
             }
         });
