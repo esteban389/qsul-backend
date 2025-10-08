@@ -97,9 +97,6 @@ readonly class EmployeeService
             UserRole::CampusCoordinator => $requestDto->process_id,
             UserRole::ProcessLeader => Auth::user()->employee()->first()->process_id,
         };
-        if (isset($requestDto->process_id) && Auth::user()->role === UserRole::ProcessLeader) {
-            throw new AuthorizationException();
-        }
 
         $hasUser = $employee->user()->withTrashed()->exists();
         if ($requestDto->avatar) {
