@@ -116,6 +116,7 @@ readonly class EmployeeService
 
         $employee->update($data);
         if($hasUser){
+            $data['process_id'] = null;
             $employee->user()->withTrashed()->update($data);
         }
     }
