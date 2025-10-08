@@ -32,7 +32,7 @@ readonly class ServiceService
         return QueryBuilder::for($query)
             ->allowedFilters([
                 'name',
-                'process_id',
+                AllowedFilter::exact('process_id'),
                 AllowedFilter::callback('deleted_at', function ($query, $value) {
                     if ($value === 'null') {
                         $query->whereNull('deleted_at');

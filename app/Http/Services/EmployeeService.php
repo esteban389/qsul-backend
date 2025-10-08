@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Spatie\QueryBuilder\QueryBuilder;
+use Spatie\QueryBuilder\AllowedFilter;
 
 readonly class EmployeeService
 {
@@ -36,7 +37,9 @@ readonly class EmployeeService
             }
         }
         return QueryBuilder::for($query)
-            ->allowedFilters(['name', 'email', 'process.token','campus_id','campus.token'])
+            ->allowedFilters(['name', 'email', 'process.token',
+            AllowedFilter::exact('campus_id'),
+            'campus.token'])
             ->allowedSorts(['name', 'email'])
             ->allowedIncludes(['services', 'process'])
             ->get();
