@@ -4,12 +4,11 @@ namespace App\Http\Services;
 
 use App\DTOs\Chart\ChartDto;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Collection;
 
 class ChartsService
 {
-
     private array $validGroupings = [
         'campuses' => ['field' => 'c.id', 'label' => 'c.name', 'image' => 'c.icon'],
         'processes' => ['field' => 'p.id', 'label' => 'p.name', 'image' => 'p.icon'],
@@ -18,20 +17,32 @@ class ChartsService
     ];
 
     private array $validTimeFrames = [
-        'month' => 'DATE_FORMAT(a.created_at, \'%Y-%m\')',
-        'year' => 'DATE_FORMAT(a.created_at, \'%Y\')',
+        'month' => "DATE_FORMAT(a.created_at, '%Y-%m')",
+        'year' => "DATE_FORMAT(a.created_at, '%Y')",
     ];
 
     private function getBaseQuery(): Builder
     {
-        return DB::table('answers as a')
+        $user = auth()->user();
+        $query = DB::table('answers as a')
             ->join('employee_service as em_se', 'a.employee_service_id', '=', 'em_se.id')
             ->join('employees as e', 'em_se.employee_id', '=', 'e.id')
             ->join('campuses as c', 'e.campus_id', '=', 'c.id')
             ->join('services as s', 'em_se.service_id', '=', 's.id')
             ->join('processes as p', 's.process_id', '=', 'p.id')
             ->join('surveys as sv', 'a.survey_id', '=', 'sv.id')
-                        ->whereNull('a.deleted_at');
+            ->whereNull('a.deleted_at');
+
+        if ($user->hasRole(UserRole::CampusCoordinator)) {
+            $query->where('c.id', $user->campus_id);
+        }
+
+        if ($user->hasRole(UserRole::ProcessLeader)) {
+            $query->where('p.id', $user->employee()->first()->process_id);
+            $query->where('c.id', $user->campus_id);
+        }
+
+        return $query;
     }
 
     /**
@@ -45,14 +56,15 @@ class ChartsService
 
         $timeFormat = $this->validTimeFrames[$request->time_frame] ?? $this->validTimeFrames['year'];
 
-        $query = $this->getBaseQuery()
+        $query = $this
+            ->getBaseQuery()
             ->selectRaw("
                 $timeFormat as period,
                 {$group['field']} as group_id,
                 {$group['label']} as group_name,
                 ROUND(AVG(a.average),2) as average_perception
             ")
-            ->groupByRaw("period, group_id, group_name")
+            ->groupByRaw('period, group_id, group_name')
             ->orderBy('period')
             ->where('sv.id', $request->survey);
 
@@ -101,12 +113,13 @@ class ChartsService
     {
         $timeFormat = $this->validTimeFrames[$request->time_frame] ?? $this->validTimeFrames['year'];
 
-        $query = $this->getBaseQuery()
+        $query = $this
+            ->getBaseQuery()
             ->selectRaw("
                 $timeFormat as period,
                 ROUND(AVG(a.average),2) as average_perception
             ")
-            ->groupByRaw("period")
+            ->groupByRaw('period')
             ->orderBy('period')
             ->whereBetween('a.created_at', [$request->start_date, $request->end_date])
             ->where('sv.id', $request->survey);
@@ -137,13 +150,13 @@ class ChartsService
      */
     public function getAverageByQuestionAndGroup(ChartDto $request): Collection
     {
-
         $group = $this->validGroupings[$request->group_by] ?? $this->validGroupings['campuses'];
 
         $timeFormat = $this->validTimeFrames[$request->time_frame] ?? $this->validTimeFrames['year'];
 
-        $query = $this->getBaseQuery()
-            ->join("answer_question as aq", 'a.id', '=', 'aq.answer_id')
+        $query = $this
+            ->getBaseQuery()
+            ->join('answer_question as aq', 'a.id', '=', 'aq.answer_id')
             ->join('questions as q', 'aq.question_id', '=', 'q.id')
             ->selectRaw("
                 {$group['field']} as group_id,
@@ -151,7 +164,7 @@ class ChartsService
                 ROUND(AVG(aq.answer),2) as average_answer,
                 q.text as question_text
             ")
-            ->groupByRaw("q.id, group_id, group_name,q.text")
+            ->groupByRaw('q.id, group_id, group_name,q.text')
             ->orderBy('group_name')
             ->whereBetween('a.created_at', [$request->start_date, $request->end_date])
             ->where('sv.id', $request->survey);
@@ -198,13 +211,14 @@ class ChartsService
     {
         $group = $this->validGroupings[$request->group_by] ?? $this->validGroupings['campuses'];
 
-        $query = $this->getBaseQuery()
+        $query = $this
+            ->getBaseQuery()
             ->selectRaw("
                 {$group['field']} as id,
                 {$group['label']} as name,
                 ROUND(AVG(a.average),2) as average_perception
             ")
-            ->groupByRaw("id, name")
+            ->groupByRaw('id, name')
             ->orderBy('name')
             ->where('sv.id', $request->survey);
 
@@ -238,13 +252,14 @@ class ChartsService
     {
         $group = $this->validGroupings[$request->group_by] ?? $this->validGroupings['campuses'];
 
-        $query = $this->getBaseQuery()
+        $query = $this
+            ->getBaseQuery()
             ->selectRaw("
                 {$group['field']} as id,
                 {$group['label']} as name,
                 COUNT(a.id) as feedback_count
             ")
-            ->groupByRaw("id, name")
+            ->groupByRaw('id, name')
             ->orderBy('name')
             ->where('sv.id', $request->survey);
 
@@ -269,7 +284,6 @@ class ChartsService
             ->get();
     }
 
-
     /**
      * Get the volume (amount) of feedback over time by group.
      * @param ChartDto $request
@@ -281,14 +295,15 @@ class ChartsService
 
         $timeFormat = $this->validTimeFrames[$request->time_frame] ?? $this->validTimeFrames['year'];
 
-        $query = $this->getBaseQuery()
+        $query = $this
+            ->getBaseQuery()
             ->selectRaw("
                 $timeFormat as period,
                 {$group['field']} as group_id,
                 {$group['label']} as group_name,
                 COUNT(a.id) as feedback_count
             ")
-            ->groupByRaw("period, group_id, group_name")
+            ->groupByRaw('period, group_id, group_name')
             ->orderBy('period')
             ->where('sv.id', $request->survey);
 
@@ -312,7 +327,6 @@ class ChartsService
             ->whereBetween('a.created_at', [$request->start_date, $request->end_date])
             ->get());
 
-
         $data = $results->groupBy('period')->map(function ($group, $period) {
             $data = [
                 'period' => $period,
@@ -333,14 +347,15 @@ class ChartsService
     public function getVolumeOfFeedbackByRespondentType(ChartDto $request): Collection
     {
         $group = $this->validGroupings[$request->group_by] ?? $this->validGroupings['campuses'];
-        $query = $this->getBaseQuery()
-            ->selectRaw("
+        $query = $this
+            ->getBaseQuery()
+            ->selectRaw('
                 rt.id as id,
                 rt.name as name,
                 COUNT(a.id) as feedback_count
-            ")
+            ')
             ->join('respondent_types as rt', 'a.respondent_type_id', '=', 'rt.id')
-            ->groupByRaw("id, name")
+            ->groupByRaw('id, name')
             ->orderBy('name')
             ->where('sv.id', $request->survey)
             ->whereBetween('a.created_at', [$request->start_date, $request->end_date]);
@@ -365,21 +380,27 @@ class ChartsService
 
     public function getDistributionByGroupAndSatisfaction(ChartDto $request): Collection
     {
-
         $group = $this->validGroupings[$request->group_by] ?? $this->validGroupings['campuses'];
         $query =
-            $this->getBaseQuery()
+            $this
+                ->getBaseQuery()
                 ->selectRaw(<<<SQL
-        CASE
-          WHEN average >= ? AND average < ? THEN ?
-          WHEN average >= ? AND average < ? THEN ?
-          WHEN average >= ? AND average <= ? THEN ?
-        END AS bucket
-    SQL,
+                            CASE
+                              WHEN average >= ? AND average < ? THEN ?
+                              WHEN average >= ? AND average < ? THEN ?
+                              WHEN average >= ? AND average <= ? THEN ?
+                            END AS bucket
+                        SQL,
                     [
-                        1, 3, 'Insatisfecho',
-                        3, 4, 'Satisfecho',
-                        4, 5, 'Muy Satisfecho',
+                        1,
+                        3,
+                        'Insatisfecho',
+                        3,
+                        4,
+                        'Satisfecho',
+                        4,
+                        5,
+                        'Muy Satisfecho',
                     ])
                 ->selectRaw("
                 {$group['field']} as group_id,
@@ -429,7 +450,8 @@ class ChartsService
     public function getRankingOfGroup(ChartDto $request): Collection
     {
         $group = $this->validGroupings[$request->group_by] ?? $this->validGroupings['campuses'];
-        $query = $this->getBaseQuery()
+        $query = $this
+            ->getBaseQuery()
             ->selectRaw("
                 {$group['field']} as id,
                 {$group['label']} as name,
@@ -437,7 +459,7 @@ class ChartsService
                 ROUND(AVG(a.average),2) as average_perception,
                 COUNT(a.id) as answer_count
             ")
-            ->groupByRaw("id, name, image")
+            ->groupByRaw('id, name, image')
             ->whereBetween('a.created_at', [$request->start_date, $request->end_date])
             ->orderBy('average_perception', 'desc')
             ->where('sv.id', $request->survey);
@@ -470,5 +492,4 @@ class ChartsService
             ];
         });
     }
-
 }

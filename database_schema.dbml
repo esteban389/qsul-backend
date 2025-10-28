@@ -1,0 +1,275 @@
+Table users {
+  id bigint [pk, increment]
+  name varchar
+  email varchar [unique]
+  email_verified_at timestamp [null]
+  password varchar
+  remember_token varchar
+  role enum('national_coordinator','campus_coordinator','process_leader') [default: 'process_leader']
+  campus_id bigint [null, ref: > campuses.id]
+  employee_id bigint [null, ref: > employees.id]
+  avatar varchar [null]
+  deleted_at timestamp [null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table password_reset_tokens {
+  email varchar [pk]
+  token varchar
+  created_at timestamp [null]
+}
+
+Table sessions {
+  id varchar [pk]
+  user_id bigint [null, ref: > users.id]
+  ip_address varchar(45) [null]
+  user_agent text [null]
+  payload longtext
+  last_activity int
+}
+
+Table cache {
+  key varchar [pk]
+  value mediumtext
+  expiration int
+}
+
+Table cache_locks {
+  key varchar [pk]
+  owner varchar
+  expiration int
+}
+
+Table jobs {
+  id bigint [pk, increment]
+  queue varchar
+  payload longtext
+  attempts tinyint unsigned
+  reserved_at int unsigned [null]
+  available_at int unsigned
+  created_at int unsigned
+}
+
+Table job_batches {
+  id varchar [pk]
+  name varchar
+  total_jobs int
+  pending_jobs int
+  failed_jobs int
+  failed_job_ids longtext
+  options mediumtext [null]
+  cancelled_at int [null]
+  created_at int
+  finished_at int [null]
+}
+
+Table failed_jobs {
+  id bigint [pk, increment]
+  uuid varchar [unique]
+  connection text
+  queue text
+  payload longtext
+  exception longtext
+  failed_at timestamp
+}
+
+Table personal_access_tokens {
+  id bigint [pk, increment]
+  tokenable_type varchar
+  tokenable_id bigint
+  name varchar
+  token varchar(64) [unique]
+  abilities text [null]
+  last_used_at timestamp [null]
+  expires_at timestamp [null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table telescope_entries {
+  sequence bigint [pk, increment]
+  uuid uuid [unique]
+  batch_id uuid
+  family_hash varchar [null]
+  should_display_on_index boolean [default: true]
+  type varchar(20)
+  content longtext
+  created_at datetime [null]
+}
+
+Table telescope_entries_tags {
+  entry_uuid uuid
+  tag varchar
+}
+
+Table telescope_monitoring {
+  tag varchar [pk]
+}
+
+Table campuses {
+  id bigint [pk, increment]
+  name varchar
+  address varchar
+  icon varchar
+  token varchar [unique]
+  deleted_at timestamp [null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table employees {
+  id bigint [pk, increment]
+  name varchar
+  email varchar [unique]
+  token varchar [unique]
+  avatar varchar
+  campus_id bigint [null, ref: > campuses.id]
+  process_id bigint [null, ref: > processes.id]
+  deleted_at timestamp [null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table processes {
+  id bigint [pk, increment]
+  name varchar
+  icon varchar
+  token varchar
+  parent_id bigint [null, ref: > processes.id]
+  deleted_at timestamp [null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table services {
+  id bigint [pk, increment]
+  name varchar
+  icon varchar
+  token varchar
+  process_id bigint [ref: > processes.id]
+  deleted_at timestamp [null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table employee_service {
+  id bigint [pk, increment]
+  employee_id bigint [ref: > employees.id]
+  service_id bigint [ref: > services.id]
+  deleted_at timestamp [null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table surveys {
+  id bigint [pk, increment]
+  version int [unique]
+  deleted_at timestamp [null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table questions {
+  id bigint [pk, increment]
+  text varchar
+  type enum('radio','yesno')
+  service_id bigint [null, ref: > services.id]
+  survey_id bigint [ref: > surveys.id]
+  order varchar
+  deleted_at timestamp [null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table respondent_types {
+  id bigint [pk, increment]
+  name varchar
+  deleted_at timestamp [null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table answers {
+  id bigint [pk, increment]
+  survey_id bigint [ref: > surveys.id]
+  respondent_type_id bigint [ref: > respondent_types.id]
+  employee_service_id bigint [ref: > employee_service.id]
+  answer_observation_id bigint [null, ref: > answer_observations.id]
+  average float
+  email varchar
+  solved_at timestamp [null]
+  deleted_at timestamp [null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table answer_question {
+  id bigint [pk, increment]
+  answer_id bigint [ref: > answers.id]
+  question_id bigint [ref: > questions.id]
+  answer float
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table observations {
+  id bigint [pk, increment]
+  user_id bigint [ref: > users.id]
+  answer_id bigint [ref: > answers.id]
+  description text
+  type enum('positive','negative','neutral')
+  deleted_at timestamp [null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table notifications {
+  id uuid [pk]
+  type varchar
+  notifiable_type varchar
+  notifiable_id bigint
+  data text
+  read_at timestamp [null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table audits {
+  id bigint [pk, increment]
+  user_type varchar [null]
+  user_id bigint [null]
+  event varchar
+  auditable_type varchar
+  auditable_id bigint
+  old_values text [null]
+  new_values text [null]
+  url text [null]
+  ip_address varchar [null]
+  user_agent varchar(1023) [null]
+  tags varchar [null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table answer_observations {
+  id bigint [pk, increment]
+  observation text
+  deleted_at timestamp [null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table pending_profile_changes {
+  id bigint [pk, increment]
+  user_id bigint [ref: > users.id]
+  change_type enum('campus', 'process', 'services')
+  new_value json
+  status enum('pending', 'approved', 'rejected') [default: 'pending']
+  requested_by bigint [ref: > users.id]
+  approved_by bigint [null, ref: > users.id]
+  requested_at timestamp
+  approved_at timestamp [null]
+  created_at timestamp
+  updated_at timestamp
+}
