@@ -6,6 +6,7 @@ use App\DTOs\Chart\ChartDto;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
+use App\DTOs\Auth\UserRole;
 
 class ChartsService
 {
