@@ -152,6 +152,36 @@ test('Process Leader can only get the results of their process inside their camp
     ]);
 });
 
+test('National coordinator can get answer detail by id', function () {
+    $user = User::factory()->withRole(UserRole::NationalCoordinator)->create();
+    $this->actingAs($user);
+
+    $response = $this->get('/api/answers/' . $this->answer->id);
+
+    $response->assertStatus(Response::HTTP_OK);
+    $response->assertJsonPath('id', $this->answer->id);
+    $response->assertJsonPath('employee_service.id', $this->employeeService->id);
+});
+
+test('Campus coordinator can get answer detail from their campus', function () {
+    $user = User::factory()->withRole(UserRole::CampusCoordinator)->create(['campus_id' => $this->campus->id]);
+    $this->actingAs($user);
+
+    $response = $this->get('/api/answers/' . $this->answer->id);
+
+    $response->assertStatus(Response::HTTP_OK);
+    $response->assertJsonPath('id', $this->answer->id);
+});
+
+test('Campus coordinator cannot get answer detail from another campus', function () {
+    $user = User::factory()->withRole(UserRole::CampusCoordinator)->create(['campus_id' => $this->campus2->id]);
+    $this->actingAs($user);
+
+    $response = $this->get('/api/answers/' . $this->answer->id);
+
+    $response->assertStatus(Response::HTTP_FORBIDDEN);
+});
+
 test('Results can be exported to csv', function () {
     $user = User::factory()->withRole(UserRole::NationalCoordinator)->create();
     $this->actingAs($user);

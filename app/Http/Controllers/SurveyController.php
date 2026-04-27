@@ -103,6 +103,8 @@ class SurveyController extends Controller
 
     public function getAnswerById(Answer $answer)
     {
+        Gate::authorize('view', $answer);
+
         return $answer->load([
             'observations',
             'observations.user',
