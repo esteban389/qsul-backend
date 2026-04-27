@@ -66,6 +66,15 @@ class AnswerPolicy
                 : Response::deny();
         }
 
+        if ($user->hasRole(UserRole::ProcessLeader)) {
+            $user->loadMissing('employee');
+
+            return $employeeService->employee->campus_id === $user->campus_id
+                && $employeeService->service?->process_id === $user->employee?->process_id
+                ? Response::allow()
+                : Response::deny();
+        }
+
         return Response::deny();
     }
 
@@ -79,6 +88,15 @@ class AnswerPolicy
 
         if ($user->hasRole(UserRole::CampusCoordinator) && $employeeService->employee->campus_id === $user->campus_id) {
             return Response::allow();
+        }
+
+        if ($user->hasRole(UserRole::ProcessLeader)) {
+            $user->loadMissing('employee');
+
+            return $employeeService->employee->campus_id === $user->campus_id
+                && $employeeService->service?->process_id === $user->employee?->process_id
+                ? Response::allow()
+                : Response::deny();
         }
 
         return Response::deny();

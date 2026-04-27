@@ -182,6 +182,46 @@ test('Campus coordinator cannot get answer detail from another campus', function
     $response->assertStatus(Response::HTTP_FORBIDDEN);
 });
 
+test('Process leader can get answer detail from their process inside their campus', function () {
+    $user = User::factory()->withRole(UserRole::ProcessLeader)->create([
+        'campus_id' => $this->campus->id,
+        'employee_id' => $this->employee->id,
+    ]);
+    $this->actingAs($user);
+
+    $response = $this->get('/api/answers/' . $this->answer->id);
+
+    $response->assertStatus(Response::HTTP_OK);
+    $response->assertJsonPath('id', $this->answer->id);
+});
+
+test('Process leader cannot get answer detail from another process inside their campus', function () {
+    $process2 = Process::factory()->create();
+    $service2 = Service::factory()->create(['process_id' => $process2->id]);
+    $employee3 = Employee::factory()->create([
+        'campus_id' => $this->campus->id,
+        'process_id' => $process2->id,
+    ]);
+    $employee3->services()->attach($service2->id);
+    $employeeService3 = $employee3->services()->withPivot('id')->first()->pivot;
+    $answer3 = Answer::factory()->create([
+        'employee_service_id' => $employeeService3->id,
+        'survey_id' => $this->survey->id,
+        'respondent_type_id' => $this->respondentType->id,
+    ]);
+    AnswerQuestion::factory()->create(['question_id' => $this->question2->id, 'answer_id' => $answer3->id]);
+
+    $user = User::factory()->withRole(UserRole::ProcessLeader)->create([
+        'campus_id' => $this->campus->id,
+        'employee_id' => $this->employee->id,
+    ]);
+    $this->actingAs($user);
+
+    $response = $this->get('/api/answers/' . $answer3->id);
+
+    $response->assertStatus(Response::HTTP_FORBIDDEN);
+});
+
 test('Results can be exported to csv', function () {
     $user = User::factory()->withRole(UserRole::NationalCoordinator)->create();
     $this->actingAs($user);
@@ -454,4 +494,45 @@ test('Process Leader can respond or solve a survey answer', function () {
             return $notification->answer->email === $this->answer->email;
         }
     );
+});
+
+test('Process Leader cannot solve an answer from another process inside their campus', function () {
+    Mail::fake();
+    Event::fake();
+    Notification::fake();
+
+    $process2 = Process::factory()->create();
+    $service2 = Service::factory()->create(['process_id' => $process2->id]);
+    $employee3 = Employee::factory()->create([
+        'campus_id' => $this->campus->id,
+        'process_id' => $process2->id,
+    ]);
+    $employee3->services()->attach($service2->id);
+    $employeeService3 = $employee3->services()->withPivot('id')->first()->pivot;
+    $answer3 = Answer::factory()->create([
+        'employee_service_id' => $employeeService3->id,
+        'survey_id' => $this->survey->id,
+        'respondent_type_id' => $this->respondentType->id,
+    ]);
+
+    $user = User::factory()->withRole(UserRole::ProcessLeader)->create([
+        'campus_id' => $this->campus->id,
+        'employee_id' => $this->employee->id,
+    ]);
+
+    $this->actingAs($user);
+
+    $response = $this->post('/api/answers/' . $answer3->id . '/solve', [
+        'observation' => 'This is an observation',
+        'type' => 'positive',
+    ]);
+
+    $response->assertStatus(Response::HTTP_FORBIDDEN);
+    $this->assertDatabaseMissing('observations', [
+        'answer_id' => $answer3->id,
+        'description' => 'This is an observation',
+        'user_id' => $user->id,
+    ]);
+    expect($answer3->fresh()->solved_at)->toBeNull();
+    Event::assertNotDispatched(AnswerSolved::class);
 });
