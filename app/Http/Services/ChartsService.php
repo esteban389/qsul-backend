@@ -3,6 +3,7 @@
 namespace App\Http\Services;
 
 use App\DTOs\Chart\ChartDto;
+use Carbon\Carbon;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
@@ -17,10 +18,36 @@ class ChartsService
         'employees' => ['field' => 'e.id', 'label' => 'e.name', 'image' => 'e.avatar'],
     ];
 
-    private array $validTimeFrames = [
-        'month' => "DATE_FORMAT(a.created_at, '%Y-%m')",
-        'year' => "DATE_FORMAT(a.created_at, '%Y')",
-    ];
+    /**
+     * Build an inclusive date range for chart queries.
+     *
+     * @return array{0: Carbon, 1: Carbon}
+     */
+    private function getDateRange(ChartDto $request): array
+    {
+        return [
+            Carbon::parse($request->start_date)->startOfDay(),
+            Carbon::parse($request->end_date)->endOfDay(),
+        ];
+    }
+
+    private function getTimeFormat(string $timeFrame): string
+    {
+        $driver = DB::connection()->getDriverName();
+        $isSqlite = $driver === 'sqlite';
+
+        return match ($timeFrame) {
+            'month' => $isSqlite
+                ? "strftime('%Y-%m', a.created_at)"
+                : "DATE_FORMAT(a.created_at, '%Y-%m')",
+            'year' => $isSqlite
+                ? "strftime('%Y', a.created_at)"
+                : "DATE_FORMAT(a.created_at, '%Y')",
+            default => $isSqlite
+                ? "strftime('%Y', a.created_at)"
+                : "DATE_FORMAT(a.created_at, '%Y')",
+        };
+    }
 
     private function getBaseQuery(): Builder
     {
@@ -55,7 +82,7 @@ class ChartsService
     {
         $group = $this->validGroupings[$request->group_by] ?? $this->validGroupings['campuses'];
 
-        $timeFormat = $this->validTimeFrames[$request->time_frame] ?? $this->validTimeFrames['year'];
+        $timeFormat = $this->getTimeFormat($request->time_frame);
 
         $query = $this
             ->getBaseQuery()
@@ -65,7 +92,7 @@ class ChartsService
                 {$group['label']} as group_name,
                 ROUND(AVG(a.average),2) as average_perception
             ")
-            ->groupByRaw('period, group_id, group_name')
+            ->groupByRaw("$timeFormat, {$group['field']}, {$group['label']}")
             ->orderBy('period')
             ->where('sv.id', $request->survey);
 
@@ -86,7 +113,7 @@ class ChartsService
         }
 
         $results = collect($query
-            ->whereBetween('a.created_at', [$request->start_date, $request->end_date])
+            ->whereBetween('a.created_at', $this->getDateRange($request))
             ->get());
 
         $data = $results->groupBy('period')->map(function ($group, $period) {
@@ -112,7 +139,7 @@ class ChartsService
      */
     public function getPerceptionTrend(ChartDto $request): Collection
     {
-        $timeFormat = $this->validTimeFrames[$request->time_frame] ?? $this->validTimeFrames['year'];
+        $timeFormat = $this->getTimeFormat($request->time_frame);
 
         $query = $this
             ->getBaseQuery()
@@ -120,9 +147,9 @@ class ChartsService
                 $timeFormat as period,
                 ROUND(AVG(a.average),2) as average_perception
             ")
-            ->groupByRaw('period')
+            ->groupByRaw($timeFormat)
             ->orderBy('period')
-            ->whereBetween('a.created_at', [$request->start_date, $request->end_date])
+            ->whereBetween('a.created_at', $this->getDateRange($request))
             ->where('sv.id', $request->survey);
 
         if ($request->campus) {
@@ -153,8 +180,6 @@ class ChartsService
     {
         $group = $this->validGroupings[$request->group_by] ?? $this->validGroupings['campuses'];
 
-        $timeFormat = $this->validTimeFrames[$request->time_frame] ?? $this->validTimeFrames['year'];
-
         $query = $this
             ->getBaseQuery()
             ->join('answer_question as aq', 'a.id', '=', 'aq.answer_id')
@@ -165,9 +190,9 @@ class ChartsService
                 ROUND(AVG(aq.answer),2) as average_answer,
                 q.text as question_text
             ")
-            ->groupByRaw('q.id, group_id, group_name,q.text')
+            ->groupBy('q.id', $group['field'], $group['label'], 'q.text')
             ->orderBy('group_name')
-            ->whereBetween('a.created_at', [$request->start_date, $request->end_date])
+            ->whereBetween('a.created_at', $this->getDateRange($request))
             ->where('sv.id', $request->survey);
 
         if ($request->campus) {
@@ -219,7 +244,7 @@ class ChartsService
                 {$group['label']} as name,
                 ROUND(AVG(a.average),2) as average_perception
             ")
-            ->groupByRaw('id, name')
+            ->groupBy($group['field'], $group['label'])
             ->orderBy('name')
             ->where('sv.id', $request->survey);
 
@@ -240,7 +265,7 @@ class ChartsService
         }
 
         return $query
-            ->whereBetween('a.created_at', [$request->start_date, $request->end_date])
+            ->whereBetween('a.created_at', $this->getDateRange($request))
             ->get();
     }
 
@@ -260,7 +285,7 @@ class ChartsService
                 {$group['label']} as name,
                 COUNT(a.id) as feedback_count
             ")
-            ->groupByRaw('id, name')
+            ->groupBy($group['field'], $group['label'])
             ->orderBy('name')
             ->where('sv.id', $request->survey);
 
@@ -281,7 +306,7 @@ class ChartsService
         }
 
         return $query
-            ->whereBetween('a.created_at', [$request->start_date, $request->end_date])
+            ->whereBetween('a.created_at', $this->getDateRange($request))
             ->get();
     }
 
@@ -294,7 +319,7 @@ class ChartsService
     {
         $group = $this->validGroupings[$request->group_by] ?? $this->validGroupings['campuses'];
 
-        $timeFormat = $this->validTimeFrames[$request->time_frame] ?? $this->validTimeFrames['year'];
+        $timeFormat = $this->getTimeFormat($request->time_frame);
 
         $query = $this
             ->getBaseQuery()
@@ -304,7 +329,7 @@ class ChartsService
                 {$group['label']} as group_name,
                 COUNT(a.id) as feedback_count
             ")
-            ->groupByRaw('period, group_id, group_name')
+            ->groupByRaw("$timeFormat, {$group['field']}, {$group['label']}")
             ->orderBy('period')
             ->where('sv.id', $request->survey);
 
@@ -325,7 +350,7 @@ class ChartsService
         }
 
         $results = collect($query
-            ->whereBetween('a.created_at', [$request->start_date, $request->end_date])
+            ->whereBetween('a.created_at', $this->getDateRange($request))
             ->get());
 
         $data = $results->groupBy('period')->map(function ($group, $period) {
@@ -356,10 +381,10 @@ class ChartsService
                 COUNT(a.id) as feedback_count
             ')
             ->join('respondent_types as rt', 'a.respondent_type_id', '=', 'rt.id')
-            ->groupByRaw('id, name')
+            ->groupBy($group['field'], $group['label'])
             ->orderBy('name')
             ->where('sv.id', $request->survey)
-            ->whereBetween('a.created_at', [$request->start_date, $request->end_date]);
+            ->whereBetween('a.created_at', $this->getDateRange($request));
 
         if ($request->campus) {
             $query->where('c.id', $request->campus);
@@ -407,8 +432,8 @@ class ChartsService
                 {$group['field']} as group_id,
                 {$group['label']} as group_name,
                 COUNT(*) AS total")
-                ->groupBy('group_id', 'group_name', 'bucket')
-                ->whereBetween('a.created_at', [$request->start_date, $request->end_date])
+                ->groupByRaw("{$group['field']}, {$group['label']}, bucket")
+                ->whereBetween('a.created_at', $this->getDateRange($request))
                 ->where('sv.id', $request->survey);
 
         if ($request->campus) {
@@ -460,8 +485,8 @@ class ChartsService
                 ROUND(AVG(a.average),2) as average_perception,
                 COUNT(a.id) as answer_count
             ")
-            ->groupByRaw('id, name, image')
-            ->whereBetween('a.created_at', [$request->start_date, $request->end_date])
+            ->groupBy($group['field'], $group['label'], $group['image'])
+            ->whereBetween('a.created_at', $this->getDateRange($request))
             ->orderBy('average_perception', 'desc')
             ->where('sv.id', $request->survey);
 

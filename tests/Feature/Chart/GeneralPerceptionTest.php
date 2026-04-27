@@ -1,72 +1,51 @@
 <?php
 
-use App\DTOs\Auth\UserRole;
-use App\Models\Campus;
-use App\Models\Survey;
-use App\Models\User;
-use Database\Seeders\AnswerTestingSeeder;
-use Database\Seeders\CampusTestingSeeder;
-use Database\Seeders\EmployeeServiceTestingSeeder;
-use Database\Seeders\ProcessTestingSeeder;
-use Database\Seeders\ServiceTestingSeeder;
-use Database\Seeders\SurveyTestingSeeder;
-use Database\Seeders\UserEmployeeTestingSeeder;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+
+require_once __DIR__ . '/ChartTestSupport.php';
 
 uses(RefreshDatabase::class);
 
-function setUpSeeders(): void
-{
-    // This will run before each test
-    (new ProcessTestingSeeder())->setCount(2)->run();
-    (new ServiceTestingSeeder())->setCount(1)->run();
-    (new CampusTestingSeeder())->setCount(2)->run();
-    (new UserEmployeeTestingSeeder())->run();
-    (new EmployeeServiceTestingSeeder())->run();
-    (new SurveyTestingSeeder())->run();
-}
+it('includes the selected end date in the general perception trend chart', function () {
+    $fixture = createInclusiveChartFixture();
 
-function setUpSurvey(): Collection|Model
-{
-    // This will run before each test
-    return Survey::factory()->create([
-        'version' => 1,
+    $this->actingAs($fixture['user']);
+
+    $response = $this->postJson('/api/chart/perception-trend', [
+        'survey' => $fixture['survey']->id,
+        'start_date' => $fixture['selected_date'],
+        'end_date' => $fixture['selected_date'],
+        'group_by' => 'campuses',
+        'time_frame' => 'month',
     ]);
-}
 
-beforeEach(function () {
-    setUpSeeders();
-    $this->survey = setUpSurvey();
-    $this->nationalCoordinator = User::factory()
-        ->withRole(UserRole::NationalCoordinator)
-        ->create();
+    $response->assertOk();
 
-    $this->campusCoordinator = User::query()->where('role', UserRole::CampusCoordinator)
-        ->where('campus_id', Campus::first('id')->id)
-        ->first();
+    $rows = $response->json();
 
-    $this->processLeader = User::query()->where('role', UserRole::ProcessLeader)
-        ->where('campus_id', Campus::first('id')->id)
-        ->first();
+    $this->assertCount(1, $rows);
+    $this->assertSame('2026-04', $rows[0]['period']);
+    $this->assertSame(4.75, (float) $rows[0]['average_perception']);
 });
 
-it('should return the correct data structure', function () {
-    $this->actingAs($this->campusCoordinator);
+it('includes the selected end date in the general perception ranking chart', function () {
+    $fixture = createInclusiveChartFixture();
 
-    $response = $this->get('/api/chart/general-perception');
+    $this->actingAs($fixture['user']);
 
-    $response->assertStatus(200);
-    // I expect the response structure to be: data: [{period: date-string, perception: number}]
-    $response->assertJsonStructure([
-        'data' => [
-            '*' => [
-                'period',
-                'perception',
-            ],
-        ],
+    $response = $this->postJson('/api/chart/ranking', [
+        'survey' => $fixture['survey']->id,
+        'start_date' => $fixture['selected_date'],
+        'end_date' => $fixture['selected_date'],
+        'group_by' => 'campuses',
+        'time_frame' => 'month',
     ]);
-});
-describe('Campus coordinator behavior for General perception chart', function () {
+
+    $response->assertOk();
+
+    $rows = $response->json();
+
+    $this->assertCount(1, $rows);
+    $this->assertSame($fixture['campus']->id, $rows[0]['id']);
+    $this->assertSame(4.75, (float) $rows[0]['average_perception']);
 });
